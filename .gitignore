@@ -1,0 +1,4 @@
+*.o
+ops/*.o
+*.vim
+six502_test
