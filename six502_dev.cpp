@@ -28,8 +28,7 @@ result_t MEM_DEV_six502::process_read(addr_t addr, databus_t *data)
     if (!isin_addr_range(&iorange, addr))
         return SIX502_RET_NO_RW;
 
-    // *data = mem[mirror(addr)];
-    *data = mem[addr];
+    *data = mem[mirror(addr)];
     return SIX502_RET_SUCCESS;
 }
 
@@ -38,7 +37,6 @@ result_t MEM_DEV_six502::process_write(addr_t addr, databus_t data)
     if (!isin_addr_range(&iorange, addr))
         return SIX502_RET_NO_RW;
 
-    // mem[mirror(addr)] = data;
-    mem[addr] = data;
+    mem[mirror(addr)] = data;
     return SIX502_RET_SUCCESS;
 }

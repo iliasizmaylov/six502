@@ -28,8 +28,7 @@ public:
     ~MEM_DEV_six502();
 
 private:
-    // u8 mem[MEM_MAX_2KB];
-    u8 mem[MEM_MAX_64KB];
+    u8 mem[MEM_MAX_2KB];
     addr_t mirror(addr_t addr) const;
 
 public:

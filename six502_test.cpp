@@ -49,13 +49,13 @@ int main()
     MEM_DEV_six502 ram("RAM", 0x0000, 0xFFFF);
     bus.add_new_device(&ram);
 
-    addr_t offset = 0x8000;
+    addr_t offset = 0x000F;
 
     for (const databus_t &byte : g_test_prog)
         bus.broadcast_write(offset++, byte); 
 
-    bus.broadcast_write(0xFFFC, 0x00); 
-    bus.broadcast_write(0xFFFD, 0x80);
+    bus.broadcast_write(0xFFFC, 0x0F); 
+    bus.broadcast_write(0xFFFD, 0x00);
 
     std::ofstream fout("six502_out.log", std::ofstream::out);
     bus.cpu->reset();
