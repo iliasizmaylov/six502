@@ -1,4 +1,5 @@
 *.o
 ops/*.o
 *.vim
+*.log
 six502_test

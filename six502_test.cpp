@@ -1,7 +1,9 @@
 #include "six502_bus.h"
 
 #include <array>
+#include <iostream>
 #include <fstream>
+#include <cstdio>
 
 /* The following g_test_prog array represents raw memory corresponding to
  * this 6502 program:
@@ -22,15 +24,21 @@
  * |  NOP
  */
 
-static const std::array<u8, 28> g_test_prog = {
+static const std::array<databus_t, 28> g_test_prog = {
     0xA2, 0x0A, 0x8E, 0x00, 0x00, 0xA2, 0x03, 0x8E, 0x01, 0x00, 0xAC, 0x00, 0x00,
     0xA9, 0x00, 0x18, 0x6D, 0x01, 0x00, 0x88, 0xD0, 0xFA, 0x8D, 0x02, 0x00, 0xEA, 0xEA, 0xEA
 };
 
 void printcpu(CPU_six502 *cpu, std::ofstream& fout)
 {
-    fout << "A: " << cpu->A << "\nX: " << cpu->X << "\nY: " << cpu->Y << std::endl;
-    fout << cpu->ictx.ins->readable << std::endl << std::endl;
+    if (!cpu->ictx.ins)
+        return;
+
+    fout << "----------------------------------------------\n";
+    fout << "A: " << std::hex << unsigned(cpu->A) << "\nX: " << unsigned(cpu->X) << "\nY: " << unsigned(cpu->Y) << std::endl;
+    fout << "PC: " << std::hex << unsigned(cpu->PC) << std::endl;
+    fout << cpu->ictx.ins->readable << " " << std::hex << unsigned(cpu->ictx.imm) << std::endl;
+    fout << "----------------------------------------------\n\n";
 }
 
 int main()
@@ -55,7 +63,7 @@ int main()
     do {
         bus.cpu->tick();
         printcpu(bus.cpu, fout);
-    } while(!bus.cpu->isnop());
+    } while (!bus.cpu->isnop());
 
     return 0;
 }

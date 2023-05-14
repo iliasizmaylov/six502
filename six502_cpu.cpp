@@ -184,7 +184,7 @@ result_t CPU_six502::reset()
 
 __always_inline bool CPU_six502::isnop()
 {
-    return busy_ticks <= 0;
+    return ictx.opcode == 0xEA;
 }
 
 result_t CPU_six502::tick()
@@ -192,11 +192,14 @@ result_t CPU_six502::tick()
     if (busy_ticks == 0) {
         memset(&ictx, 0, sizeof(ictx));
 
-        read(PC, &ictx.opcode);
+        read(PC++, &ictx.opcode);
         ictx.ins = &ops[ictx.opcode];
         busy_ticks = ictx.ins->ticks;
 
         (this->*ictx.ins->addr)();
+
+        read(ictx.abs, &ictx.imm);
+
         (this->*ictx.ins->proc)();
 
         set_flag(FLAG_UNUSED, true);

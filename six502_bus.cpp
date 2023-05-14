@@ -20,7 +20,7 @@ __always_inline result_t BUS_six502::add_new_device(DEV_six502 *new_device)
 
 result_t BUS_six502::init_cpu()
 {
-    cpu = new(std::nothrow) CPU_six502();
+    cpu = new CPU_six502();
     cpu->bind(this);
 
     return SIX502_RET_SUCCESS;

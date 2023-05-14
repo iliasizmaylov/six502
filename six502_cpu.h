@@ -3,6 +3,7 @@
 
 #include "six502_dev.h"
 
+#include <iostream>
 #include <unordered_map>
 
 /* Flags for status register */
