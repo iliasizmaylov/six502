@@ -14,13 +14,51 @@ CPU_six502::CPU_six502()
     X = 0;
     Y = 0;
     STKP = STKP_ADDR_RESET;
-    STATUS = FLAG_UNUSED;
+    STATUS = 0;
     PC = PC_ADDR_RESET;
+
+    has_saved_state = false;
 }
 
 CPU_six502::~CPU_six502()
 {
     /* No logic required yet */
+}
+
+const struct instruction *CPU_six502::get_op_description(u8 opcode)
+{
+    return &ops[opcode];
+}
+
+void CPU_six502::save_state()
+{
+    memcpy(&saved_state.ictx, &ictx, sizeof(ictx));
+    saved_state.A = A;
+    saved_state.X = X;
+    saved_state.Y = Y;
+    saved_state.STKP = STKP;
+    saved_state.STATUS = STATUS;
+    saved_state.PC = PC;
+    saved_state.busy_ticks = busy_ticks;
+
+    has_saved_state = true;
+}
+
+void CPU_six502::load_state()
+{
+    if (!has_saved_state)
+        return;
+
+    memcpy(&ictx, &saved_state.ictx, sizeof(ictx));
+    A = saved_state.A;
+    X = saved_state.X;
+    Y = saved_state.Y;
+    STKP = saved_state.STKP;
+    STATUS = saved_state.STATUS;
+    PC = saved_state.PC;
+    busy_ticks = saved_state.busy_ticks;
+
+    has_saved_state = false;
 }
 
 result_t CPU_six502::read(addr_t addr, databus_t *out_data)
@@ -167,6 +205,9 @@ result_t CPU_six502::reset()
     read(ictx.abs + 1, &hi);
 
     PC = MERGE16(hi, lo);
+    ictx.opaddr = PC;
+    read(PC, &ictx.opcode);
+    ictx.ins = &ops[ictx.opcode];
 
     A = 0;
     X = 0;
@@ -182,16 +223,12 @@ result_t CPU_six502::reset()
     return SIX502_RET_SUCCESS;
 }
 
-__always_inline bool CPU_six502::isnop()
-{
-    return ictx.opcode == 0xEA;
-}
-
 result_t CPU_six502::tick()
 {
     if (busy_ticks == 0) {
         memset(&ictx, 0, sizeof(ictx));
 
+        ictx.opaddr = PC;
         read(PC++, &ictx.opcode);
         ictx.ins = &ops[ictx.opcode];
         busy_ticks = ictx.ins->ticks;

@@ -5,6 +5,9 @@
 #include <fstream>
 #include <cstdio>
 
+#include "video/sdlutils.h"
+#include "six502_dbg.h"
+
 /* The following g_test_prog array represents raw memory corresponding to
  * this 6502 program:
  * |  LDX #10
@@ -29,18 +32,6 @@ static const std::array<databus_t, 28> g_test_prog = {
     0xA9, 0x00, 0x18, 0x6D, 0x01, 0x00, 0x88, 0xD0, 0xFA, 0x8D, 0x02, 0x00, 0xEA, 0xEA, 0xEA
 };
 
-void printcpu(CPU_six502 *cpu, std::ofstream& fout)
-{
-    if (!cpu->ictx.ins)
-        return;
-
-    fout << "----------------------------------------------\n";
-    fout << "A: " << std::hex << unsigned(cpu->A) << "\nX: " << unsigned(cpu->X) << "\nY: " << unsigned(cpu->Y) << std::endl;
-    fout << "PC: " << std::hex << unsigned(cpu->PC) << std::endl;
-    fout << cpu->ictx.ins->readable << " " << std::hex << unsigned(cpu->ictx.imm) << std::endl;
-    fout << "----------------------------------------------\n\n";
-}
-
 int main()
 {
     BUS_six502 bus;
@@ -49,21 +40,88 @@ int main()
     MEM_DEV_six502 ram("RAM", 0x0000, 0xFFFF);
     bus.add_new_device(&ram);
 
+    SDL_Init(SDL_INIT_VIDEO);
+
+    SDL_Window *win;
+    SDL_Renderer *rnd;
+
+    int win_w, win_h;
+
+    win = NULL;
+    rnd = NULL;
+
+    win = SDL_CreateWindow("Test",
+            SDL_WINDOWPOS_CENTERED,
+            SDL_WINDOWPOS_CENTERED,
+            1024, 768, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+
+    rnd = SDL_CreateRenderer(win, -1, 0);
+
+    DBG_six502 debugger(win, rnd, &bus);
+
+    SDL_GetWindowSize(win, &win_w, &win_h);
+
+    SDL_Event event;
+
     addr_t offset = 0x000F;
 
     for (const databus_t &byte : g_test_prog)
-        bus.broadcast_write(offset++, byte); 
+        bus.broadcast_write(offset++, byte);
 
-    bus.broadcast_write(0xFFFC, 0x0F); 
+    bus.broadcast_write(0xFFFC, 0x0F);
     bus.broadcast_write(0xFFFD, 0x00);
 
-    std::ofstream fout("six502_out.log", std::ofstream::out);
     bus.cpu->reset();
 
-    do {
-        bus.cpu->tick();
-        printcpu(bus.cpu, fout);
-    } while (!bus.cpu->isnop());
+    bool done = false;
+    u8 blueclr = 100;
+    int blueclr_mod = -1;
 
+    float title_scale = 0.0;
+    float content_scale = 0.0;
+
+    u64 next_ticks = SDL_GetTicks64() + 30;
+    u64 next_bgchange_ticks = SDL_GetTicks64() + 50;
+    u64 next_cpu_ticks = SDL_GetTicks64() + 60;
+
+    title_scale = ((float)win_w / 2000) + ((float)win_h / 2000);
+    title_scale = title_scale > 0.65 ? 0.65 : title_scale;
+
+    content_scale = ((float)win_w / 3000) + ((float)win_h / 3000);
+    content_scale = content_scale > 0.5 ? 0.5 : content_scale;
+
+    while(!done) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT)
+                done = true;
+            debugger.process_event(&event);
+        }
+
+        if (next_bgchange_ticks <= SDL_GetTicks64()) {
+            if (blueclr <= 85 || blueclr >= 115)
+                blueclr_mod *= -1;
+            blueclr += blueclr_mod;
+            next_bgchange_ticks += 50;
+        }
+
+        if (next_cpu_ticks <= SDL_GetTicks64()) {
+            if (bus.cpu->ictx.opcode != 0xEA)
+                bus.cpu->tick();
+            next_cpu_ticks += 60;
+        }
+
+        if (next_ticks <= SDL_GetTicks64()) {
+            debugger.update();
+
+            SDL_RenderPresent(rnd);
+
+            next_ticks += 30;
+        }
+    }
+
+    SDL_DestroyWindow(win);
+    SDL_DestroyRenderer(rnd);
+
+    SDL_Quit();
     return 0;
 }

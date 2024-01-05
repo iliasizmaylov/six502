@@ -1,7 +1,7 @@
 #include "six502_cpu.h"
 
 #define INIT_OP(code, INS, ADR, ticks)  \
-    ops.insert({0x##code, {0x##code, #INS, ticks, &CPU_six502::i##INS, &CPU_six502::a##ADR}});
+    ops.insert({0x##code, {0x##code, #INS, #ADR, ticks, &CPU_six502::i##INS, &CPU_six502::a##ADR}});
 
 __attr_cold void CPU_six502::init_ops()
 {

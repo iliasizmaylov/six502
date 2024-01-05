@@ -19,8 +19,17 @@ public:
 
     result_t add_new_device(DEV_six502* new_device);
     result_t init_cpu();
-    result_t broadcast_read(addr_t addr, databus_t *data) const;
-    result_t broadcast_write(addr_t addr, databus_t data) const;
+    result_t broadcast_read(addr_t addr, databus_t *data);
+    result_t broadcast_write(addr_t addr, databus_t data);
+
+    DEV_six502 *get_device_at_addr(addr_t addr);
+
+    result_t fetch_device_data(addr_t addr,
+            addr_range_t range, databus_t *data,
+            std::string *dev_name, u16 *num_bytes);
+
+    result_t fetch_instructions(addr_t start, struct instruction_ctx *out,
+            u16 count, u16 *num);
 };
 
 #endif  /* _SIX502_BUS_H_ */

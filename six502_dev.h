@@ -11,15 +11,16 @@ public:
     DEV_six502(const char *name, addr_t from, addr_t to);
     virtual ~DEV_six502() = default;
 
-protected:
     std::string name;
     addr_range_t iorange;
 
-public:
     devid_t id;
     
     virtual result_t process_read(addr_t addr, databus_t *data) = 0;
     virtual result_t process_write(addr_t addr, databus_t data) = 0;
+
+    result_t fetch_data(addr_range_t range, 
+            databus_t *data, u16 *num_bytes);
 };
 
 class MEM_DEV_six502 : public DEV_six502 {

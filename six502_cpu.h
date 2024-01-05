@@ -30,8 +30,39 @@ enum __CPU_BUILTIN_STATS {
     RESET_TICKS     = 8         /* NR of ticks consumed by reset */
 };
 
-/* Forward declaration of BUS class to be pointed to within CPU class */
 class BUS_six502;
+class CPU_six502;
+
+/* Instruction descriptor struct */
+struct instruction {
+    u8 opcode;                  /* 1-Byte instruction code */
+    std::string readable;       /* Human readable instruction name */
+    std::string a_readable;     /* Human readable address mode name */
+    u8 ticks;                   /* Number of ticks required by instruction */
+
+    /* Pointer to instruction handler function */
+    result_t (CPU_six502::*proc)();
+
+    /* Pointer to address mode handler function */
+    result_t (CPU_six502::*addr)();
+};
+
+/* Context for the current instruction being executed */
+struct instruction_ctx {
+    u8 opcode;
+    addr_t opaddr;
+    addr_t abs;     /* Aboslute address of an instruction target */
+    addr_t rel;     /* Relative address required by current instruction */
+    u8 imm;         /* Fetched value after applying address mode handler */
+    u16 aux;        /* Auxiliary container 1 */
+    u16 aux2;       /* Auxiliary container 2 */
+    u8 aux81;       /* Auxiliary 8-bit container 1 */
+    u8 aux82;       /* Auxiliary 8-bit container 2 */
+    u8 aux83;       /* Auxiliary 8-bit container 2 */
+
+    /* Pointer to an instruction that is currently being executed */
+    struct instruction *ins;
+};
 
 class CPU_six502 {
 public:
@@ -42,47 +73,22 @@ private:
     BUS_six502 *bus;    /* Pointer to BUS class that this CPU is associated with */
     u8 busy_ticks;      /* Number of ticks left until CPU is ready to execute next instruction */
 
-    /* Instruction descriptor struct */
-    struct instruction {
-        u8 opcode;              /* 1-Byte instruction code */
-        std::string readable;   /* Human readable instruction name */
-        u8 ticks;               /* Number of ticks required by instruction */
-
-        /* Pointer to instruction handler function */
-        result_t (CPU_six502::*proc)();
-
-        /* Pointer to address mode handler function */
-        result_t (CPU_six502::*addr)();
-    };
-
+public:
     /* Map of: hex opcode<->instruction descriptor struct */
     std::unordered_map<u8, struct instruction> ops;
 
-public:
     /* Context for the current instruction being executed */
-    struct instruction_ctx {
-        u8 opcode;
-        addr_t abs;     /* Aboslute address of an instruction target */
-        addr_t rel;     /* Relative address required by current instruction */
-        u8 imm;         /* Fetched value after applying address mode handler */
-        u16 aux;        /* Auxiliary container 1 */
-        u16 aux2;       /* Auxiliary container 2 */
-        u8 aux81;       /* Auxiliary 8-bit container 1 */
-        u8 aux82;       /* Auxiliary 8-bit container 2 */
-        u8 aux83;       /* Auxiliary 8-bit container 2 */
+    struct instruction_ctx ictx;
 
-        /* Pointer to an instruction that is currently being executed */
-        struct instruction *ins;
-    } ictx;
+    u8 get_flag(u8 flag);
+
+    const struct instruction *get_op_description(u8 opcode);
 
 private:
     /* Called once in constructor, initializes this->ops */
     void init_ops();
 
-    /* Calls appropriate address mode handler and instruction handler */
-    result_t proc_op();
-
-   /* Read from the BUS (this->bus) */
+    /* Read from the BUS (this->bus) */
     result_t read(addr_t addr, databus_t *out_data);
 
     /* Write to the BUS (this->bus) */
@@ -96,7 +102,6 @@ private:
 
     /* Status register operations */
     void set_flag(u8 flag, bool cond);
-    u8 get_flag(u8 flag);
     void set_flags_nz(u16 tgt);
     void set_flags_nz(u8 tgt);
 
@@ -115,8 +120,23 @@ public:
     result_t nmi();     /* Non-Maskable interrupt handler */
     result_t reset();   /* CPU reset handler */
 
-    bool isnop();
     result_t tick();    /* Processor tick (i.e. clock tick handler) */
+
+    struct saved_state_desc {
+        struct instruction_ctx ictx;
+        u8 A;
+        u8 X;
+        u8 Y;
+        u8 STKP;
+        u8 STATUS;
+        addr_t PC;
+        u8 busy_ticks;
+    } saved_state;
+
+    bool has_saved_state;
+
+    void save_state();
+    void load_state();
 
 private:
     /* Address mode handlers */

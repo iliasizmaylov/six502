@@ -1,16 +1,32 @@
 PACKAGE 	= six502_test
 VERSION		= 0.0001
 
+TARGET_SYSTEM = ""
+
+TARGET_SYSTEM := $(shell uname -s)
+ifeq ($(OS), Windows_NT)
+	TARGET_SYSTEM = "WIN_32"
+endif
+
+ifeq ($(TARGET_SYSTEM), Darwin)
+	OSX_SDL_FRAMEWORKS = -framework SDL2	\
+					-framework SDL2_ttf		\
+					-framework SDL2_image
+	OSX_F = -F/Library/Frameworks
+endif
+
 CPPSTD 		= -std=c++17
 CXXFLAGS 	= -g -Wall -Wextra $(CPPSTD) $(CFLAGS_PLATFORM)
-LDFLAGS	 	= $(LDFLAGS_PLATFORM) -lsdl2
+LDFLAGS	 	= $(LDFLAGS_PLATFORM) -L/opt/local/lib -lSDL2 -lSDL2_image
 
-INCLUDES	= -I.
+INCLUDES	= -Ivideo -I.
 
 SOURCES		:= $(wildcard *.cpp)
 OBJECTS		:= $(SOURCES:.cpp=.o)
 OP_SOURCES	:= $(wildcard ops/*.cpp)
 OP_OBJECTS	:= $(OP_SOURCES:.cpp=.o)
+SDL_SOURCES	:= $(wildcard video/*.cpp)
+SDL_OBJECTS := $(SDL_SOURCES:.cpp=.o)
 
 ANSI_RESET	= \e[0m
 ANSI_BOLD	= \e[1m
@@ -20,13 +36,13 @@ ANSI_GREEN	= \e[32m
 
 all: $(PACKAGE)
 
-$(PACKAGE): info $(OBJECTS) $(OP_OBJECTS)
+$(PACKAGE): info $(OBJECTS) $(OP_OBJECTS) $(SDL_OBJECTS)
 	@printf "Linking into an executable $(ANSI_GREEN)$(PACKAGE)$(ANSI_RESET)\n"
-	@$(CXX) $(INCLUDES) $(OBJECTS) $(OP_OBJECTS) -o $(PACKAGE) $(LDFLAGS)
+	@$(CXX) $(INCLUDES) $(OBJECTS) $(OP_OBJECTS) $(SDL_OBJECTS) -o $(PACKAGE) $(LDFLAGS)
 	@printf "\nBuild finished.\n"
 
 %.o: %.cpp
-	@$(CXX) $(INCLUDES) $(CXXFLAGS) $< -c -o $@
+	@$(CXX) $(INCLUDES) $(CXXFLAGS) $(OSX_F) $< -c -o $@
 	@printf "Compiling $<...\n"
 
 info:
@@ -35,5 +51,5 @@ info:
 .PHONY: clean
 clean:
 	@printf "Removing all $(ANSI_BOLD)SIX502$(ANSI_RESET) objects and executables..."
-	@rm -f $(PACKAGE) $(OBJECTS) $(OP_OBJECTS)
+	@rm -f $(PACKAGE) $(OBJECTS) $(OP_OBJECTS) $(SDL_OBJECTS)
 	@printf " $(ANSI_GREEN)Done$(ANSI_RESET)!\n"

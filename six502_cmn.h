@@ -87,6 +87,23 @@ static __always_inline __attr_used bool isin_addr_range(const addr_range_t *tgt,
     return isin_addr_range_const(tgt->hi, tgt->lo, addr);
 }
 
+static __always_inline __attr_used bool addr_range_intersects(const addr_range_t *tgt, const addr_range_t *src)
+{
+    if ((tgt->hi > src->hi && tgt->hi > src->lo) && (tgt->lo < src->lo && tgt->lo < src->hi))
+        return false;
+
+    return true;
+}
+
+static __always_inline __attr_used void addr_range_squeeze(const addr_range_t *big, addr_range_t *small)
+{
+    if (!addr_range_intersects(big, small))
+        return;
+
+    small->hi = small->hi < big->hi ? big->hi : small->hi;
+    small->lo = small->lo > big->lo ? big->lo : small->lo;
+}
+
 #define __SIX502_RET_SECTION_INFO       __RET_SEC_INFO,
 #define __SIX502_RET_SECTION_WARNINGS   __RET_SEC_WARN,
 #define __SIX502_RET_SECTION_ERRORS     __RET_SEC_ERR,
@@ -108,6 +125,7 @@ __SIX502_RET_SECTION_WARNINGS
     SIX502_RET_STRAY_MEM,
 
 __SIX502_RET_SECTION_ERRORS
+    SIX502_RET_NO_DEV,
     SIX502_RET_BAD_INPUT,
     SIX502_RET_NO_BUS,
     SIX502_RET_HALT,

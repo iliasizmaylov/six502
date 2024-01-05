@@ -12,7 +12,7 @@ BUS_six502::~BUS_six502()
         delete cpu;
 }
 
-__always_inline result_t BUS_six502::add_new_device(DEV_six502 *new_device)
+result_t BUS_six502::add_new_device(DEV_six502 *new_device)
 {
     devices.insert(new_device);
     return SIX502_RET_SUCCESS;
@@ -26,22 +26,91 @@ result_t BUS_six502::init_cpu()
     return SIX502_RET_SUCCESS;
 }
 
-result_t BUS_six502::broadcast_read(addr_t addr, databus_t *data) const
+result_t BUS_six502::broadcast_read(addr_t addr, databus_t *data)
 {
-    for (auto it = devices.begin(); it != devices.end(); ++it) {
-        if ((*it)->process_read(addr, data) == SIX502_RET_SUCCESS)
-            return SIX502_RET_SUCCESS;
-    }
+    result_t res = SIX502_RET_STRAY_MEM;
 
-    return SIX502_RET_STRAY_MEM;
+    for (auto it = devices.begin(); it != devices.end(); ++it)
+        if ((*it)->process_read(addr, data) == SIX502_RET_SUCCESS)
+            res = SIX502_RET_SUCCESS;
+
+    return res;
 }
 
-result_t BUS_six502::broadcast_write(addr_t addr, databus_t data) const
+result_t BUS_six502::broadcast_write(addr_t addr, databus_t data)
 {
-    for (auto it = devices.begin(); it != devices.end(); ++it) {
+    result_t res = SIX502_RET_STRAY_MEM;
+
+    for (auto it = devices.begin(); it != devices.end(); ++it)
         if ((*it)->process_write(addr, data) == SIX502_RET_SUCCESS)
-            return SIX502_RET_SUCCESS;
+            res = SIX502_RET_SUCCESS;
+
+    return res;
+}
+
+DEV_six502 *BUS_six502::get_device_at_addr(addr_t addr)
+{
+    databus_t buf;
+
+    for (auto it = devices.begin(); it != devices.end(); ++it)
+        if ((*it)->process_read(addr, &buf) == SIX502_RET_SUCCESS)
+            return (*it);
+
+    return NULL;
+}
+
+result_t BUS_six502::fetch_device_data(addr_t addr,
+        addr_range_t range, databus_t *data,
+        std::string *dev_name, u16 *num_bytes)
+{
+    result_t res = SIX502_RET_STRAY_MEM;
+    databus_t buf;
+
+    for (auto it = devices.begin(); it != devices.end(); ++it) {
+        if ((*it)->process_read(addr, &buf) == SIX502_RET_SUCCESS) {
+            res = (*it)->fetch_data(range, data, num_bytes);
+
+            if (res == SIX502_RET_SUCCESS)
+                *dev_name = (*it)->name;
+
+            return res;
+        }
     }
 
-    return SIX502_RET_STRAY_MEM;
+    return res;
+}
+
+result_t BUS_six502::fetch_instructions(addr_t start, struct instruction_ctx *out, u16 count, u16 *num)
+{
+    databus_t buf;
+    *num = 0;
+
+    if (!out || count == 0)
+        return SIX502_RET_BAD_INPUT;
+    
+    for (auto it = devices.begin(); it != devices.end(); ++it) {
+        if ((*it)->process_read(start, &buf) == SIX502_RET_SUCCESS) {
+            cpu->save_state();
+            for (u16 i = 0; i <= count; i++) {
+                if ((*it)->process_read(start, &buf) != SIX502_RET_SUCCESS) {
+                    *num = i;
+                    break;
+                }
+
+                cpu->ictx.ins = &cpu->ops[buf];
+                cpu->ictx.opcode = buf;
+                cpu->ictx.opaddr = start;
+                (cpu->*cpu->ictx.ins->addr)();
+
+                out[i] = cpu->ictx;
+                start++;
+            }
+            cpu->load_state();
+
+            *num = count;
+            return SIX502_RET_SUCCESS;
+        }
+    }
+
+    return SIX502_RET_NO_RW;
 }
