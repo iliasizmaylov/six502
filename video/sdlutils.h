@@ -26,6 +26,8 @@
 
 #define DEFAULT_PIXELFORMAT     SDL_PIXELFORMAT_ARGB8888
 
+#define DEFAULT_TITLE_OFFSET    3
+
 class BitmapFont {
 public:
     BitmapFont();
@@ -49,7 +51,7 @@ private:
     int char_total;
 
     void __render_box(SDL_Renderer *rnd, SDL_Rect *__r,
-            float scale, bool has_title, std::string title,
+            float scale, bool has_title, int offset, std::string title,
             const SDL_Color *text_color, const SDL_Color *border_color);
 
 public:
@@ -66,6 +68,11 @@ public:
             SDL_Rect *r, float scale);
     void render_box_title_color(SDL_Renderer *rnd, std::string title,
             SDL_Rect *r, float scale,
+            const SDL_Color *text_color, const SDL_Color *border_color);
+    void render_box_title_offset(SDL_Renderer *rnd, std::string title,
+            int offset, SDL_Rect *r, float scale);
+    void render_box_title_color_offset(SDL_Renderer *rnd, std::string title,
+            int offset, SDL_Rect *r, float scale,
             const SDL_Color *text_color, const SDL_Color *border_color);
 
     int get_char_width();

@@ -19,12 +19,12 @@
 
 #define BGCHANGE_FREQUENCY      50
 #define BLUECLR_DEFAULT         100
-#define BLUECLR_MIN             85
+#define BLUECLR_MIN             92
 #define BLUECLR_MAX             115
 
-#define WINDOW_COUNT            3
+#define WINDOW_COUNT            5
 
-#define MARKUP_RES              8
+#define MARKUP_RES              12
 
 enum __DBG_COLORS {
     DBG_CLR_DEFAULT = 0,
@@ -53,6 +53,8 @@ enum __DBG_COLORS {
 class DBG_six502;
 
 class DBG_six502_window {
+    friend class DBG_six502;
+
 public:
     static const SDL_Color __clr[NR_DBG_CLR];
 
@@ -126,6 +128,28 @@ public:
     void draw() override;
 };
 
+class DBG_six502_wmem : public DBG_six502_window {
+public:
+    DBG_six502_wmem() : DBG_six502_window() {};
+    DBG_six502_wmem(DBG_six502 *debugger, std::string name, char sym) :
+            DBG_six502_window(debugger, name, sym) {};
+
+    ~DBG_six502_wmem() {};
+
+    void draw() override;
+};
+
+class DBG_six502_wstack : public DBG_six502_window {
+public:
+    DBG_six502_wstack() : DBG_six502_window() {};
+    DBG_six502_wstack(DBG_six502 *debugger, std::string name, char sym) :
+            DBG_six502_window(debugger, name, sym) {};
+
+    ~DBG_six502_wstack() {};
+
+    void draw() override;
+};
+
 class DBG_six502 {
     friend class DBG_six502_window;
 
@@ -141,7 +165,7 @@ public:
 
 private:
     static const char *__keypound_font_file;
-    static const char *__dbg_window_name;
+    static const std::string __dbg_window_name;
     static const std::string __interface[MARKUP_RES];
 
     SDL_Window *dbgwin;
@@ -160,6 +184,9 @@ private:
     int blueclr_mod;
     u64 bgchange_next_ticks;
 
+    bool step_mode;
+    unsigned int steps_left;
+
     float title_scale;
     float content_scale;
 
@@ -176,6 +203,9 @@ private:
     void draw_title_frame();
     void draw_interface();
 
+    addr_t custom_pc_reset;
+    bool has_custom_pc_reset;
+
 public:
     result_t set_window(SDL_Window *win);
     result_t set_renderer(SDL_Renderer *rnd);
@@ -188,8 +218,17 @@ public:
     result_t update();
     result_t process_event(SDL_Event *ev);
 
-    result_t step_mode_on();
-    result_t step_mode_off();
+    void set_custom_pc_reset(addr_t pc);
+    void unset_custom_pc_reset();
+    void cpu_reset();
+
+    void step_mode_on();
+    void step_mode_off();
+    void step_mode_toggle();
+
+    void step();
+
+    result_t run_cpu();
 };
 
 static inline int get_last_col(std::string *tgt)

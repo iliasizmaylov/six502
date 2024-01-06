@@ -2,6 +2,8 @@
 #define _SIX502_CMN_H_
 
 #include <cstdint>
+#include <string>
+#include <algorithm>
 
 #define __always_inline __attribute__((always_inline))
 #define __hot           __attribute__((hot))
@@ -79,7 +81,10 @@ static __always_inline __attr_used void fill_addr_range(addr_range_t *tgt, u32 m
 
 static __always_inline __attr_const __attr_used bool isin_addr_range_const(addr_t from, addr_t to, addr_t addr)
 {
-    return (addr >= from && addr <= to);
+    if (from <= to)
+        return (addr >= from && addr <= to);
+
+    return (addr >= to && addr <= from);
 }
 
 static __always_inline __attr_used bool isin_addr_range(const addr_range_t *tgt, addr_t addr)

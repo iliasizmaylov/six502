@@ -40,12 +40,30 @@ result_t DEV_six502::fetch_data(addr_range_t range, databus_t *data, u16 *num_by
     return SIX502_RET_SUCCESS;
 }
 
-__always_inline __attr_const addr_t MEM_DEV_six502::mirror(addr_t addr) const
+result_t MEM_DEV_six502::process_read(addr_t addr, databus_t *data)
+{
+    if (!isin_addr_range(&iorange, addr))
+        return SIX502_RET_NO_RW;
+
+    *data = mem[addr];
+    return SIX502_RET_SUCCESS;
+}
+
+result_t MEM_DEV_six502::process_write(addr_t addr, databus_t data)
+{
+    if (!isin_addr_range(&iorange, addr))
+        return SIX502_RET_NO_RW;
+
+    mem[addr] = data;
+    return SIX502_RET_SUCCESS;
+}
+
+__always_inline __attr_const addr_t NES_MEM_six502::mirror(addr_t addr) const
 {
     return addr & MEM_SZ_2KB;
 }
 
-result_t MEM_DEV_six502::process_read(addr_t addr, databus_t *data)
+result_t NES_MEM_six502::process_read(addr_t addr, databus_t *data)
 {
     if (!isin_addr_range(&iorange, addr))
         return SIX502_RET_NO_RW;
@@ -54,7 +72,7 @@ result_t MEM_DEV_six502::process_read(addr_t addr, databus_t *data)
     return SIX502_RET_SUCCESS;
 }
 
-result_t MEM_DEV_six502::process_write(addr_t addr, databus_t data)
+result_t NES_MEM_six502::process_write(addr_t addr, databus_t data)
 {
     if (!isin_addr_range(&iorange, addr))
         return SIX502_RET_NO_RW;

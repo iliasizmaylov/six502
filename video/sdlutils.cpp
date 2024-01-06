@@ -158,7 +158,7 @@ void BitmapFont::render_grid(SDL_Renderer *rnd, int line, int col, std::string t
 
 void BitmapFont::__render_box(SDL_Renderer *rnd,
         SDL_Rect *__r, float scale,
-        bool has_title, std::string title,
+        bool has_title, int offset, std::string title,
         const SDL_Color *text_color, const SDL_Color *border_color)
 {
     SDL_Rect r;
@@ -196,7 +196,7 @@ void BitmapFont::__render_box(SDL_Renderer *rnd,
         r.x = x + font_w + (i * font_w);
         r.y = y;
 
-        if (has_title && i == (num_ver < 3 ? num_ver : 3)) {
+        if (has_title && i == (num_ver < offset ? num_ver : offset)) {
             this->set_color(text_color);
             this->render(rnd, r.x, r.y, title, scale);
             i += title_length - 1;
@@ -244,6 +244,8 @@ void BitmapFont::__render_box(SDL_Renderer *rnd,
     r.y = y + h - font_h;
 
     SDL_RenderCopy(rnd, this->texture, &this->rchars[BOX_CHAR_LOWERRIGHT], &r);
+
+    this->reset_color();
 }
 
 void BitmapFont::render_box(SDL_Renderer *rnd, SDL_Rect *r, float scale)
@@ -251,7 +253,7 @@ void BitmapFont::render_box(SDL_Renderer *rnd, SDL_Rect *r, float scale)
     SDL_Color text = {255, 255, 255, 255};
     SDL_Color border = {255, 255, 255, 255};
 
-    this->__render_box(rnd, r, scale, false, "", &text, &border);
+    this->__render_box(rnd, r, scale, false, DEFAULT_TITLE_OFFSET, "", &text, &border);
 }
 
 void BitmapFont::render_box_title(SDL_Renderer *rnd, std::string title,
@@ -260,14 +262,31 @@ void BitmapFont::render_box_title(SDL_Renderer *rnd, std::string title,
     SDL_Color text = {255, 255, 255, 255};
     SDL_Color border = {255, 255, 255, 255};
 
-    this->__render_box(rnd, r, scale, true, title, &text, &border);
+    this->__render_box(rnd, r, scale, true, DEFAULT_TITLE_OFFSET, title, &text, &border);
 }
 
 void BitmapFont::render_box_title_color(SDL_Renderer *rnd, std::string title,
         SDL_Rect *r, float scale,
         const SDL_Color *text_color, const SDL_Color *border_color)
 {
-    this->__render_box(rnd, r, scale, true,
+    this->__render_box(rnd, r, scale, true, DEFAULT_TITLE_OFFSET,
+            title, text_color, border_color);
+}
+
+void BitmapFont::render_box_title_offset(SDL_Renderer *rnd, std::string title,
+        int offset, SDL_Rect *r, float scale)
+{
+    SDL_Color text = {255, 255, 255, 255};
+    SDL_Color border = {255, 255, 255, 255};
+
+    this->__render_box(rnd, r, scale, true, offset, title, &text, &border);
+}
+
+void BitmapFont::render_box_title_color_offset(SDL_Renderer *rnd, std::string title,
+        int offset, SDL_Rect *r, float scale,
+        const SDL_Color *text_color, const SDL_Color *border_color)
+{
+    this->__render_box(rnd, r, scale, true, offset,
             title, text_color, border_color);
 }
 

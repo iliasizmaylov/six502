@@ -24,9 +24,10 @@ public:
 
     DEV_six502 *get_device_at_addr(addr_t addr);
 
-    result_t fetch_device_data(addr_t addr,
-            addr_range_t range, databus_t *data,
-            std::string *dev_name, u16 *num_bytes);
+    result_t load_from_file_64(std::string path);
+
+    result_t fetch_device_data(addr_range_t range, databus_t *data,
+            u16 *num_bytes);
 
     result_t fetch_instructions(addr_t start, struct instruction_ctx *out,
             u16 count, u16 *num);

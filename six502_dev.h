@@ -23,14 +23,27 @@ public:
             databus_t *data, u16 *num_bytes);
 };
 
+class NES_MEM_six502 : public DEV_six502 {
+public:
+    NES_MEM_six502(const char *name, addr_t from, addr_t to);
+    ~NES_MEM_six502();
+
+private:
+    databus_t mem[MEM_MAX_2KB];
+    addr_t mirror(addr_t addr) const;
+
+public:
+    result_t process_read(addr_t addr, databus_t *data);
+    result_t process_write(addr_t addr, databus_t data);
+};
+
 class MEM_DEV_six502 : public DEV_six502 {
 public:
     MEM_DEV_six502(const char *name, addr_t from, addr_t to);
     ~MEM_DEV_six502();
 
 private:
-    u8 mem[MEM_MAX_2KB];
-    addr_t mirror(addr_t addr) const;
+    databus_t mem[MEM_MAX_64KB];
 
 public:
     result_t process_read(addr_t addr, databus_t *data);

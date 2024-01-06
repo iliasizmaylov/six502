@@ -111,6 +111,5 @@ __six502_instr result_t CPU_six502::iPLP()
 __six502_instr result_t CPU_six502::iPHP()
 {
     u8 st = STATUS | FLAG_BREAK | FLAG_UNUSED;
-    STATUS &= ~(FLAG_BREAK | FLAG_UNUSED);
     return push_stack(st);
 }

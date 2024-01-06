@@ -5,32 +5,7 @@
 #include <fstream>
 #include <cstdio>
 
-#include "video/sdlutils.h"
 #include "six502_dbg.h"
-
-/* The following g_test_prog array represents raw memory corresponding to
- * this 6502 program:
- * |  LDX #10
- * |  STX $0000
- * |  LDX #3
- * |  STX $0001
- * |  LDY $0000
- * |  LDA #0
- * |  CLC
- * |loop:
- * |  ADC $0001
- * |  DEY
- * |  BNE loop
- * |  STA $0002
- * |  NOP
- * |  NOP
- * |  NOP
- */
-
-static const std::array<databus_t, 28> g_test_prog = {
-    0xA2, 0x0A, 0x8E, 0x00, 0x00, 0xA2, 0x03, 0x8E, 0x01, 0x00, 0xAC, 0x00, 0x00,
-    0xA9, 0x00, 0x18, 0x6D, 0x01, 0x00, 0x88, 0xD0, 0xFA, 0x8D, 0x02, 0x00, 0xEA, 0xEA, 0xEA
-};
 
 int main()
 {
@@ -63,32 +38,20 @@ int main()
 
     SDL_Event event;
 
-    addr_t offset = 0x000F;
+    bus.load_from_file_64("tests/bin_files/6502_functional_test.bin");
 
-    for (const databus_t &byte : g_test_prog)
-        bus.broadcast_write(offset++, byte);
-
-    bus.broadcast_write(0xFFFC, 0x0F);
-    bus.broadcast_write(0xFFFD, 0x00);
-
-    bus.cpu->reset();
+    debugger.set_custom_pc_reset(0x0400);
+    debugger.cpu_reset();
 
     bool done = false;
     u8 blueclr = 100;
     int blueclr_mod = -1;
 
-    float title_scale = 0.0;
-    float content_scale = 0.0;
-
     u64 next_ticks = SDL_GetTicks64() + 30;
+    u64 prev_ticks = next_ticks;
+    u64 next_ticks_cpu = SDL_GetTicks64() + 5;
+    u64 prev_ticks_cpu = next_ticks_cpu;
     u64 next_bgchange_ticks = SDL_GetTicks64() + 50;
-    u64 next_cpu_ticks = SDL_GetTicks64() + 60;
-
-    title_scale = ((float)win_w / 2000) + ((float)win_h / 2000);
-    title_scale = title_scale > 0.65 ? 0.65 : title_scale;
-
-    content_scale = ((float)win_w / 3000) + ((float)win_h / 3000);
-    content_scale = content_scale > 0.5 ? 0.5 : content_scale;
 
     while(!done) {
         while (SDL_PollEvent(&event)) {
@@ -104,19 +67,22 @@ int main()
             next_bgchange_ticks += 50;
         }
 
-        if (next_cpu_ticks <= SDL_GetTicks64()) {
-            if (bus.cpu->ictx.opcode != 0xEA)
-                bus.cpu->tick();
-            next_cpu_ticks += 60;
+        if (next_ticks_cpu <= SDL_GetTicks64()) {
+            debugger.run_cpu();
+            prev_ticks_cpu = next_ticks_cpu;
+            next_ticks_cpu += 5;
         }
 
         if (next_ticks <= SDL_GetTicks64()) {
             debugger.update();
 
             SDL_RenderPresent(rnd);
-
+            
+            prev_ticks = next_ticks;
             next_ticks += 30;
         }
+
+        SDL_Delay(next_ticks_cpu - prev_ticks_cpu);
     }
 
     SDL_DestroyWindow(win);

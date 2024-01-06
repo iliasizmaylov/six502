@@ -2,27 +2,15 @@
 
 __six502_instr result_t CPU_six502::iBRK()
 {
-    PC++;
-
-    set_flag(FLAG_IRQ, true);
-    push_pc();
-
-    set_flag(FLAG_BREAK, true);
-    push_stack(STATUS);
-    set_flag(FLAG_BREAK, false);
-
-    read(IRQ_ADDR_RESET, &ictx.aux81);
-    read(IRQ_ADDR_RESET + 1, &ictx.aux82);
-    PC = MERGE16(ictx.aux82, ictx.aux81);
-
+    this->irq();
     return SIX502_RET_SUCCESS;
 }
 
 __six502_instr result_t CPU_six502::iRTI()
 {
     pop_stack(&STATUS);
-    STATUS &= ~(FLAG_BREAK | FLAG_UNUSED);
     pop_pc();
+
     PC += 1;
 
     return SIX502_RET_SUCCESS;

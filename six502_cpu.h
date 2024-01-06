@@ -21,7 +21,7 @@ enum __STATUS_REG_FLAGS {
 /* Various built-in addresses and values for irq, reset, nmi, etc.*/
 enum __CPU_BUILTIN_STATS {
     PC_ADDR_RESET   = 0xFFFC,   /* Reset vector address */
-    STKP_ADDR_RESET = 0x00FD,   /* Max stack offset from stack page 0x0100 */
+    STKP_ADDR_RESET = 0x00FF,   /* Max stack offset from stack page 0x0100 */
     STKP_PAGE_RESET = 0x0100,   /* Stack page in RAM */
     IRQ_ADDR_RESET  = 0xFFFE,   /* IRQ vector address */
     NMI_ADDR_RESET  = 0xFFFA,   /* NMI vector address */
@@ -105,6 +105,8 @@ private:
     void set_flags_nz(u16 tgt);
     void set_flags_nz(u8 tgt);
 
+    result_t __runop(bool debugger_on);
+
 public:
     u8 A;       /* A register */
     u8 X;       /* X register */
@@ -120,7 +122,9 @@ public:
     result_t nmi();     /* Non-Maskable interrupt handler */
     result_t reset();   /* CPU reset handler */
 
-    result_t tick();    /* Processor tick (i.e. clock tick handler) */
+    result_t runop();
+    result_t runop_dbg();
+    result_t tick();                /* Processor tick (i.e. clock tick handler) */
 
     struct saved_state_desc {
         struct instruction_ctx ictx;

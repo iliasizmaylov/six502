@@ -1,5 +1,8 @@
 #include "six502_bus.h"
 
+#include <iostream>
+#include <fstream>
+
 BUS_six502::BUS_six502()
 {
     cpu = nullptr;
@@ -59,21 +62,38 @@ DEV_six502 *BUS_six502::get_device_at_addr(addr_t addr)
     return NULL;
 }
 
-result_t BUS_six502::fetch_device_data(addr_t addr,
-        addr_range_t range, databus_t *data,
-        std::string *dev_name, u16 *num_bytes)
+result_t BUS_six502::load_from_file_64(std::string path)
+{
+    databus_t buf;
+    char buf_c;
+    addr_t addr = 0x0000;
+
+    std::ifstream test_bin(path.c_str(), std::ios::binary);
+    if (!test_bin)
+        return SIX502_RET_BAD_INPUT;
+
+    while (test_bin.get(buf_c)) {
+        buf = (databus_t)buf_c;
+        broadcast_write(addr, buf);
+        addr++;
+    }
+
+    return SIX502_RET_SUCCESS;
+}
+
+result_t BUS_six502::fetch_device_data(addr_range_t range, databus_t *data,
+        u16 *num_bytes)
 {
     result_t res = SIX502_RET_STRAY_MEM;
     databus_t buf;
+    addr_t test_addr = range.hi;
 
     for (auto it = devices.begin(); it != devices.end(); ++it) {
-        if ((*it)->process_read(addr, &buf) == SIX502_RET_SUCCESS) {
+        if ((*it)->process_read(test_addr, &buf) == SIX502_RET_SUCCESS) {
             res = (*it)->fetch_data(range, data, num_bytes);
 
             if (res == SIX502_RET_SUCCESS)
-                *dev_name = (*it)->name;
-
-            return res;
+                return res;
         }
     }
 

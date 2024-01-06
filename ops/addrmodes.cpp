@@ -7,7 +7,10 @@ __six502_addrm result_t CPU_six502::aIMP()
 
 __six502_addrm result_t CPU_six502::aIMM()
 {
-    ictx.abs = PC++;
+    ictx.abs = PC;
+    read(ictx.abs, &ictx.imm);
+    PC++;
+
     return SIX502_RET_SUCCESS;
 }
 

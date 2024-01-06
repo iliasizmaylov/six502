@@ -77,28 +77,28 @@ result_t CPU_six502::write(addr_t addr, databus_t data)
     return bus->broadcast_write(addr, data);
 }
 
-__always_inline __flatten result_t CPU_six502::push_stack(databus_t data)
+result_t CPU_six502::push_stack(databus_t data)
 {
     result_t res = write(STKP_PAGE_RESET + STKP, data);
     STKP -= 1;
     return res;
 }
 
-__always_inline __flatten result_t CPU_six502::pop_stack(databus_t *out_data)
+result_t CPU_six502::pop_stack(databus_t *out_data)
 {
     STKP += 1;
     result_t res = read(STKP_PAGE_RESET + STKP, out_data);
     return res;
 }
 
-__always_inline __flatten result_t CPU_six502::push_pc()
+result_t CPU_six502::push_pc()
 {
     push_stack(HI8(PC));
     push_stack(LO8(PC));
     return SIX502_RET_SUCCESS;
 }
 
-__always_inline __flatten result_t CPU_six502::pop_pc()
+result_t CPU_six502::pop_pc()
 {
    u8 hi;
    u8 lo;
@@ -110,7 +110,7 @@ __always_inline __flatten result_t CPU_six502::pop_pc()
    return SIX502_RET_SUCCESS;
 }
 
-__always_inline __flatten void CPU_six502::set_flag(u8 flag, bool cond)
+void CPU_six502::set_flag(u8 flag, bool cond)
 {
     if (cond)
         STATUS |= flag;
@@ -118,18 +118,18 @@ __always_inline __flatten void CPU_six502::set_flag(u8 flag, bool cond)
         STATUS &= ~flag;
 }
 
-__always_inline __flatten u8 CPU_six502::get_flag(u8 flag)
+u8 CPU_six502::get_flag(u8 flag)
 {
     return STATUS & flag;
 }
 
-__always_inline __flatten void CPU_six502::set_flags_nz(u16 tgt)
+void CPU_six502::set_flags_nz(u16 tgt)
 {
     set_flag(FLAG_ZERO, (tgt & 0x00FF) == 0);
     set_flag(FLAG_NEG, !!(tgt & 0x0080));
 }
 
-__always_inline __flatten void CPU_six502::set_flags_nz(u8 tgt)
+void CPU_six502::set_flags_nz(u8 tgt)
 {
     set_flags_nz((u16)tgt);
 }
@@ -145,7 +145,7 @@ result_t CPU_six502::bind(BUS_six502 *new_bus)
 
 result_t CPU_six502::irq()
 {
-    if (!(STATUS & FLAG_IRQ))
+    if (STATUS & FLAG_IRQ)
         return SIX502_RET_IRQ_DISABLED;
 
     push_pc();
@@ -223,24 +223,42 @@ result_t CPU_six502::reset()
     return SIX502_RET_SUCCESS;
 }
 
-result_t CPU_six502::tick()
+result_t CPU_six502::__runop(bool debugger_on)
 {
-    if (busy_ticks == 0) {
-        memset(&ictx, 0, sizeof(ictx));
+    memset(&ictx, 0, sizeof(ictx));
 
-        ictx.opaddr = PC;
-        read(PC++, &ictx.opcode);
-        ictx.ins = &ops[ictx.opcode];
+    ictx.opaddr = PC;
+    read(PC++, &ictx.opcode);
+    ictx.ins = &ops[ictx.opcode];
+
+    if (!debugger_on)
         busy_ticks = ictx.ins->ticks;
 
-        (this->*ictx.ins->addr)();
+    (this->*ictx.ins->addr)();
 
-        read(ictx.abs, &ictx.imm);
+    read(ictx.abs, &ictx.imm);
 
-        (this->*ictx.ins->proc)();
+    (this->*ictx.ins->proc)();
 
-        set_flag(FLAG_UNUSED, true);
-    }
+    set_flag(FLAG_UNUSED, true);
+
+    return SIX502_RET_SUCCESS;
+}
+
+result_t CPU_six502::runop()
+{
+    return __runop(false);
+}
+
+result_t CPU_six502::runop_dbg()
+{
+    return __runop(true);
+}
+
+result_t CPU_six502::tick()
+{
+    if (busy_ticks == 0)
+        this->runop();
 
     busy_ticks -= busy_ticks == 0 ? 0 : 1;
     return SIX502_RET_SUCCESS;
