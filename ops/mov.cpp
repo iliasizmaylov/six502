@@ -82,7 +82,6 @@ __six502_instr result_t CPU_six502::iTSX()
 __six502_instr result_t CPU_six502::iTXS()
 {
     STKP = X;
-    set_flags_nz(STKP);
 
     return SIX502_RET_SUCCESS;
 }
@@ -111,5 +110,7 @@ __six502_instr result_t CPU_six502::iPLP()
 __six502_instr result_t CPU_six502::iPHP()
 {
     u8 st = STATUS | FLAG_BREAK | FLAG_UNUSED;
+    STATUS &= ~FLAG_BREAK;
+    STATUS &= ~FLAG_UNUSED;
     return push_stack(st);
 }

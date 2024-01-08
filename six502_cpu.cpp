@@ -17,7 +17,10 @@ CPU_six502::CPU_six502()
     STATUS = 0;
     PC = PC_ADDR_RESET;
 
+    aux_state = CPU_STATE_CLEAR;
+
     has_saved_state = false;
+    total_ticks = 0;
 }
 
 CPU_six502::~CPU_six502()
@@ -79,7 +82,7 @@ result_t CPU_six502::write(addr_t addr, databus_t data)
 
 result_t CPU_six502::push_stack(databus_t data)
 {
-    result_t res = write(STKP_PAGE_RESET + STKP, data);
+    result_t res = write(STKP_PAGE_RESET | STKP, data);
     STKP -= 1;
     return res;
 }
@@ -87,7 +90,7 @@ result_t CPU_six502::push_stack(databus_t data)
 result_t CPU_six502::pop_stack(databus_t *out_data)
 {
     STKP += 1;
-    result_t res = read(STKP_PAGE_RESET + STKP, out_data);
+    result_t res = read(STKP_PAGE_RESET | STKP, out_data);
     return res;
 }
 
@@ -220,6 +223,9 @@ result_t CPU_six502::reset()
 
     busy_ticks = RESET_TICKS;
 
+    aux_state = CPU_STATE_CLEAR;
+    total_ticks = 0;
+
     return SIX502_RET_SUCCESS;
 }
 
@@ -233,14 +239,36 @@ result_t CPU_six502::__runop(bool debugger_on)
 
     if (!debugger_on)
         busy_ticks = ictx.ins->ticks;
+    total_ticks += busy_ticks;
 
     (this->*ictx.ins->addr)();
-
-    read(ictx.abs, &ictx.imm);
 
     (this->*ictx.ins->proc)();
 
     set_flag(FLAG_UNUSED, true);
+
+    return SIX502_RET_SUCCESS;
+}
+
+result_t CPU_six502::dryrun()
+{
+    struct instruction_ctx saved_ctx;
+
+    this->save_state();
+
+    memset(&ictx, 0, sizeof(ictx));
+
+    ictx.opaddr = PC;
+    read(PC++, &ictx.opcode);
+    ictx.ins = &ops[ictx.opcode];
+
+    busy_ticks = ictx.ins->ticks;
+
+    (this->*ictx.ins->addr)();
+
+    memcpy(&saved_ctx, &ictx, sizeof(ictx));
+    this->load_state();
+    memcpy(&ictx, &saved_ctx, sizeof(ictx));
 
     return SIX502_RET_SUCCESS;
 }
@@ -260,6 +288,7 @@ result_t CPU_six502::tick()
     if (busy_ticks == 0)
         this->runop();
 
+    total_ticks += 1;
     busy_ticks -= busy_ticks == 0 ? 0 : 1;
     return SIX502_RET_SUCCESS;
 }

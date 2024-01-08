@@ -121,6 +121,7 @@ static __always_inline __attr_used void addr_range_squeeze(const addr_range_t *b
 
 enum __SIX502_RET {
     SIX502_RET_SUCCESS,
+    SIX502_RET_QUIT,
 
 __SIX502_RET_SECTION_INFO
     SIX502_RET_NO_RW,

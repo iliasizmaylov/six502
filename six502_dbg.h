@@ -7,6 +7,13 @@
 #include "six502_bus.h"
 
 #include <stdarg.h>
+#include <vector>
+
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
+#include <chrono>
 
 #define TITLE_BASE_SCALE        0.8
 #define TITLE_MIN_SCALE         0.2
@@ -19,8 +26,8 @@
 
 #define BGCHANGE_FREQUENCY      50
 #define BLUECLR_DEFAULT         100
-#define BLUECLR_MIN             92
-#define BLUECLR_MAX             115
+#define BLUECLR_MIN             90
+#define BLUECLR_MAX             105
 
 #define WINDOW_COUNT            5
 
@@ -155,6 +162,8 @@ class DBG_six502 {
 
     friend class DBG_six502_wcpustate;
     friend class DBG_six502_wdisasm;
+    friend class DBG_six502_wstack;
+    friend class DBG_six502_wmem;
     friend class DBG_six502_whelp;
 
 public:
@@ -184,13 +193,27 @@ private:
     int blueclr_mod;
     u64 bgchange_next_ticks;
 
-    bool step_mode;
-    unsigned int steps_left;
+    std::atomic_bool step_mode;
+    std::atomic_uint steps_left;
+    std::atomic_bool dbg_quit;
 
     float title_scale;
     float content_scale;
 
     BitmapFont font_engine;
+
+    addr_t custom_pc_reset;
+    bool has_custom_pc_reset;
+
+    std::vector<addr_t> breakpoints;
+    std::vector<addr_t> watchpoints;
+
+    std::mutex run_lock;
+    std::thread *run_thread;
+    std::condition_variable step_mode_cv;
+    std::condition_variable cpu_awake_cv;
+    std::atomic_bool cpu_relax_flag;
+    std::chrono::nanoseconds cpu_relax_time;
 
     inline void calc_scales();
 
@@ -203,8 +226,7 @@ private:
     void draw_title_frame();
     void draw_interface();
 
-    addr_t custom_pc_reset;
-    bool has_custom_pc_reset;
+    result_t run_cpu();
 
 public:
     result_t set_window(SDL_Window *win);
@@ -218,6 +240,9 @@ public:
     result_t update();
     result_t process_event(SDL_Event *ev);
 
+    void set_breakpoints(std::vector<addr_t> breaks);
+    void set_watchpoints(std::vector<addr_t> watch);
+
     void set_custom_pc_reset(addr_t pc);
     void unset_custom_pc_reset();
     void cpu_reset();
@@ -228,7 +253,10 @@ public:
 
     void step();
 
-    result_t run_cpu();
+    result_t run_cpu_once();
+    void start_cpu();
+    void relax_cpu();
+    void relax_cpu(std::chrono::nanoseconds t);
 };
 
 static inline int get_last_col(std::string *tgt)

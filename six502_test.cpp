@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+#include <ctime>
 
 #include "six502_dbg.h"
 
@@ -28,7 +29,7 @@ int main()
     win = SDL_CreateWindow("Test",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            1024, 768, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+            1024, 768, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP);
 
     rnd = SDL_CreateRenderer(win, -1, 0);
 
@@ -47,17 +48,19 @@ int main()
     u8 blueclr = 100;
     int blueclr_mod = -1;
 
-    u64 next_ticks = SDL_GetTicks64() + 30;
+    u64 next_ticks = SDL_GetTicks64() + 50;
     u64 prev_ticks = next_ticks;
-    u64 next_ticks_cpu = SDL_GetTicks64() + 5;
-    u64 prev_ticks_cpu = next_ticks_cpu;
     u64 next_bgchange_ticks = SDL_GetTicks64() + 50;
 
     while(!done) {
+        debugger.start_cpu();
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT)
                 done = true;
-            debugger.process_event(&event);
+
+            if (debugger.process_event(&event) == SIX502_RET_QUIT)
+                done = true;
         }
 
         if (next_bgchange_ticks <= SDL_GetTicks64()) {
@@ -65,12 +68,6 @@ int main()
                 blueclr_mod *= -1;
             blueclr += blueclr_mod;
             next_bgchange_ticks += 50;
-        }
-
-        if (next_ticks_cpu <= SDL_GetTicks64()) {
-            debugger.run_cpu();
-            prev_ticks_cpu = next_ticks_cpu;
-            next_ticks_cpu += 5;
         }
 
         if (next_ticks <= SDL_GetTicks64()) {
@@ -81,8 +78,8 @@ int main()
             prev_ticks = next_ticks;
             next_ticks += 30;
         }
-
-        SDL_Delay(next_ticks_cpu - prev_ticks_cpu);
+       
+        SDL_Delay(next_ticks - prev_ticks);
     }
 
     SDL_DestroyWindow(win);

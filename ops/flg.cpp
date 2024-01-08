@@ -2,16 +2,36 @@
 
 __six502_instr result_t CPU_six502::iBRK()
 {
-    this->irq();
+    PC++;
+
+    STATUS |= FLAG_BREAK | FLAG_UNUSED;
+    push_pc();
+    push_stack(STATUS);
+
+    STATUS &= ~FLAG_BREAK;
+    STATUS |= FLAG_IRQ;
+
+    ictx.abs = IRQ_ADDR_RESET;
+
+    u8 lo;
+    read(ictx.abs, &lo);
+
+    u8 hi;
+    read(ictx.abs + 1, &hi);
+
+    PC = MERGE16(hi, lo);
+
     return SIX502_RET_SUCCESS;
 }
 
 __six502_instr result_t CPU_six502::iRTI()
 {
     pop_stack(&STATUS);
-    pop_pc();
 
-    PC += 1;
+    STATUS &= ~FLAG_BREAK;
+    STATUS &= ~FLAG_UNUSED;
+
+    pop_pc();
 
     return SIX502_RET_SUCCESS;
 }
@@ -36,6 +56,10 @@ __six502_instr result_t CPU_six502::iRTS()
 __six502_instr result_t CPU_six502::iJMP()
 {
     PC = ictx.abs;
+
+    if (ictx.abs == ictx.opaddr)
+        this->aux_state |= CPU_JUMP_SELF;
+
     return SIX502_RET_SUCCESS;
 }
 

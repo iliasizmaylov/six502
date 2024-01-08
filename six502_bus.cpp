@@ -120,10 +120,11 @@ result_t BUS_six502::fetch_instructions(addr_t start, struct instruction_ctx *ou
                 cpu->ictx.ins = &cpu->ops[buf];
                 cpu->ictx.opcode = buf;
                 cpu->ictx.opaddr = start;
+                cpu->PC = start + 1;
                 (cpu->*cpu->ictx.ins->addr)();
 
                 out[i] = cpu->ictx;
-                start++;
+                start = cpu->PC;
             }
             cpu->load_state();
 

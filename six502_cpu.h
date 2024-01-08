@@ -30,6 +30,14 @@ enum __CPU_BUILTIN_STATS {
     RESET_TICKS     = 8         /* NR of ticks consumed by reset */
 };
 
+enum __CPU_AUX_STATES {
+    CPU_STATE_CLEAR     = 0,
+
+    CPU_STACK_OVERFLOW  = (1 << 15),
+    CPU_STACK_EMPTY_POP = (1 << 14),
+    CPU_JUMP_SELF       = (1 << 13)
+};
+
 class BUS_six502;
 class CPU_six502;
 
@@ -53,6 +61,7 @@ struct instruction_ctx {
     addr_t opaddr;
     addr_t abs;     /* Aboslute address of an instruction target */
     addr_t rel;     /* Relative address required by current instruction */
+    addr_t rel_d;   /* Relative address required by current instruction */
     u8 imm;         /* Fetched value after applying address mode handler */
     u16 aux;        /* Auxiliary container 1 */
     u16 aux2;       /* Auxiliary container 2 */
@@ -88,12 +97,6 @@ private:
     /* Called once in constructor, initializes this->ops */
     void init_ops();
 
-    /* Read from the BUS (this->bus) */
-    result_t read(addr_t addr, databus_t *out_data);
-
-    /* Write to the BUS (this->bus) */
-    result_t write(addr_t addr, databus_t data);
-
     /* Stack operations */
     result_t push_stack(databus_t data);
     result_t pop_stack(databus_t *out_data);
@@ -108,12 +111,21 @@ private:
     result_t __runop(bool debugger_on);
 
 public:
+    /* Read from the BUS (this->bus) */
+    result_t read(addr_t addr, databus_t *out_data);
+
+    /* Write to the BUS (this->bus) */
+    result_t write(addr_t addr, databus_t data);
+
     u8 A;       /* A register */
     u8 X;       /* X register */
     u8 Y;       /* Y register */
     u8 STKP;    /* Stack pointer */
     u8 STATUS;  /* Status register */
     addr_t PC;  /* Program counter */
+
+    u16 aux_state;
+    u64 total_ticks;
 
     /* Bind a bus to this CPU */
     result_t bind(BUS_six502 *new_bus);
@@ -122,6 +134,7 @@ public:
     result_t nmi();     /* Non-Maskable interrupt handler */
     result_t reset();   /* CPU reset handler */
 
+    result_t dryrun();
     result_t runop();
     result_t runop_dbg();
     result_t tick();                /* Processor tick (i.e. clock tick handler) */

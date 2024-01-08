@@ -145,6 +145,9 @@ __six502_instr result_t CPU_six502::iINY()
 
 __six502_instr result_t CPU_six502::iASL()
 {
+    if (ictx.ins->addr == &CPU_six502::aIMP)
+        ictx.imm = A;
+
     ictx.aux = (u16)ictx.imm << 1;
 
     set_flags_nz(ictx.aux);
@@ -160,6 +163,9 @@ __six502_instr result_t CPU_six502::iASL()
 
 __six502_instr result_t CPU_six502::iROL()
 {
+    if (ictx.ins->addr == &CPU_six502::aIMP)
+        ictx.imm = A;
+
     ictx.aux = (u16)(ictx.imm << 1) | get_flag(FLAG_CARRY);
 
     set_flags_nz(ictx.aux);
@@ -175,6 +181,9 @@ __six502_instr result_t CPU_six502::iROL()
 
 __six502_instr result_t CPU_six502::iLSR()
 {
+    if (ictx.ins->addr == &CPU_six502::aIMP)
+        ictx.imm = A;
+
     ictx.aux = (u16)ictx.imm >> 1;
 
     set_flags_nz(ictx.aux);
@@ -190,6 +199,9 @@ __six502_instr result_t CPU_six502::iLSR()
 
 __six502_instr result_t CPU_six502::iROR()
 {
+    if (ictx.ins->addr == &CPU_six502::aIMP)
+        ictx.imm = A;
+
     ictx.aux = (u16)(get_flag(FLAG_CARRY) << 7) | (u16)ictx.imm >> 1;
 
     set_flags_nz(ictx.aux);
