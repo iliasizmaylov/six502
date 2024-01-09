@@ -138,6 +138,7 @@ public:
     result_t runop();
     result_t runop_dbg();
     result_t tick();                /* Processor tick (i.e. clock tick handler) */
+    result_t tick_for(u64 nticks);
 
     struct saved_state_desc {
         struct instruction_ctx ictx;

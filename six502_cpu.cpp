@@ -292,3 +292,11 @@ result_t CPU_six502::tick()
     busy_ticks -= busy_ticks == 0 ? 0 : 1;
     return SIX502_RET_SUCCESS;
 }
+
+result_t CPU_six502::tick_for(u64 nticks)
+{
+    for (u64 i = 0; i < nticks; i++)
+        this->tick();
+
+    return SIX502_RET_SUCCESS;
+}

@@ -29,7 +29,14 @@
 #define BLUECLR_MIN             90
 #define BLUECLR_MAX             105
 
-#define WINDOW_COUNT            5
+enum __DBG_WINDOWS {
+    DBGWIN_CPUSTATE = 0,
+    DBGWIN_DISASM,
+    DBGWIN_HELP,
+    DBGWIN_MEMORY,
+    DBGWIN_STACK,
+    NR_DBGWIN
+};
 
 #define MARKUP_RES              12
 
@@ -99,6 +106,7 @@ public:
     void crenderf(int clr, const std::string fmt, ...);
 
     void resize();
+    void draw_running();
     virtual void draw();
 };
 
@@ -215,6 +223,9 @@ private:
     std::atomic_bool cpu_relax_flag;
     std::chrono::nanoseconds cpu_relax_time;
 
+    std::atomic_ullong nticks_before_relax;
+    std::atomic_ullong ticks_after_relax;
+
     inline void calc_scales();
 
     inline int get_content_char_w();
@@ -254,9 +265,11 @@ public:
     void step();
 
     result_t run_cpu_once();
+    void awake_cpu();
     void start_cpu();
     void relax_cpu();
     void relax_cpu(std::chrono::nanoseconds t);
+    void relax_cpu_each_nticks(u64 nticks);
 };
 
 static inline int get_last_col(std::string *tgt)

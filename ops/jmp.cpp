@@ -7,7 +7,7 @@ static __always_inline u8 __branch_on(bool cond, u16 *pc,
     u8 pagex = (u8)(cond & (HI8((*pc + rel) != HI8(*pc))));
     *pc += cond ? rel : 0;
 
-    if (cond && pc_before == (*pc + 1))
+    if (cond && *pc == (pc_before - 2))
         cpu->aux_state |= CPU_JUMP_SELF;
 
     return pagex;

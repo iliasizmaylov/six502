@@ -8,6 +8,8 @@
 
 #include "six502_dbg.h"
 
+#define FREQUENCY_6502  1789773
+
 int main()
 {
     BUS_six502 bus;
@@ -48,12 +50,14 @@ int main()
     u8 blueclr = 100;
     int blueclr_mod = -1;
 
-    u64 next_ticks = SDL_GetTicks64() + 50;
+    u64 next_ticks = SDL_GetTicks64() + 60;
     u64 prev_ticks = next_ticks;
     u64 next_bgchange_ticks = SDL_GetTicks64() + 50;
 
+    debugger.relax_cpu_each_nticks(FREQUENCY_6502 / 60);
+    debugger.start_cpu();
     while(!done) {
-        debugger.start_cpu();
+        debugger.awake_cpu();
 
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT)
@@ -76,7 +80,7 @@ int main()
             SDL_RenderPresent(rnd);
             
             prev_ticks = next_ticks;
-            next_ticks += 30;
+            next_ticks += 60;
         }
        
         SDL_Delay(next_ticks - prev_ticks);

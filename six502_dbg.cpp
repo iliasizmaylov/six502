@@ -32,16 +32,16 @@ const SDL_Color DBG_six502_window::__clr[NR_DBG_CLR] = {
 
 DBG_six502_window::DBG_six502_window()
 {
-    this->debugger = nullptr;
+    debugger = nullptr;
 }
 
 void DBG_six502_window::resize()
 {
-    this->viewport = {0, 0, 0, 0};
-    this->inner_viewport = {0, 0, 0, 0};
+    viewport = {0, 0, 0, 0};
+    inner_viewport = {0, 0, 0, 0};
 
-    this->cursor_line = 0;
-    this->cursor_col = 0;
+    cursor_line = 0;
+    cursor_col = 0;
 
     int x_start = -1;
     int y_start = -1;
@@ -51,38 +51,38 @@ void DBG_six502_window::resize()
     int cell_w = 0;
     int cell_h = 0;
 
-    if (!this->debugger)
+    if (!debugger)
         return;
 
     for (int i = 0; i < MARKUP_RES; i++) {
         for (int j = 0; j < MARKUP_RES; j++) {
-            if (x_start < 0 && DBG_six502::__interface[i][j] == this->sym)
+            if (x_start < 0 && DBG_six502::__interface[i][j] == sym)
                 x_start = j;
-            if ((j >= x_end || x_end < 0) && DBG_six502::__interface[i][j] == this->sym)
+            if ((j >= x_end || x_end < 0) && DBG_six502::__interface[i][j] == sym)
                 x_end = j;
-            if (y_start < 0 && DBG_six502::__interface[i][j] == this->sym)
+            if (y_start < 0 && DBG_six502::__interface[i][j] == sym)
                 y_start = i;
-            if ((i >= y_end || y_end < 0) && DBG_six502::__interface[i][j] == this->sym)
+            if ((i >= y_end || y_end < 0) && DBG_six502::__interface[i][j] == sym)
                 y_end = i;
         }
     }
 
-    cell_w = this->debugger->wspace_w / MARKUP_RES;
-    cell_h = this->debugger->wspace_h / MARKUP_RES;
+    cell_w = debugger->wspace_w / MARKUP_RES;
+    cell_h = debugger->wspace_h / MARKUP_RES;
 
-    this->viewport.x = CONTENT_OFFSET + TITLE_OFFSET + this->debugger->get_title_char_w() + cell_w * x_start;
-    this->viewport.y = CONTENT_OFFSET + TITLE_OFFSET + this->debugger->get_title_char_h() + cell_h * y_start;
-    this->viewport.w = cell_w * (x_end - x_start + 1);
-    this->viewport.h = cell_h * (y_end - y_start + 1);
+    viewport.x = CONTENT_OFFSET + TITLE_OFFSET + debugger->get_title_char_w() + cell_w * x_start;
+    viewport.y = CONTENT_OFFSET + TITLE_OFFSET + debugger->get_title_char_h() + cell_h * y_start;
+    viewport.w = cell_w * (x_end - x_start + 1);
+    viewport.h = cell_h * (y_end - y_start + 1);
 
-    this->inner_viewport.x = this->viewport.x + this->debugger->get_content_char_w() + CONTENT_OFFSET;
-    this->inner_viewport.y = this->viewport.y + this->debugger->get_content_char_h() + CONTENT_OFFSET;
-    this->inner_viewport.w = this->viewport.w - this->debugger->get_content_char_w() - CONTENT_OFFSET;
-    this->inner_viewport.h = this->viewport.h - this->debugger->get_content_char_h() - CONTENT_OFFSET;
+    inner_viewport.x = viewport.x + debugger->get_content_char_w() + CONTENT_OFFSET;
+    inner_viewport.y = viewport.y + debugger->get_content_char_h() + CONTENT_OFFSET;
+    inner_viewport.w = viewport.w - debugger->get_content_char_w() - CONTENT_OFFSET;
+    inner_viewport.h = viewport.h - debugger->get_content_char_h() - CONTENT_OFFSET;
 
-    this->total_lines = (int)std::round(this->inner_viewport.h / (this->debugger->get_content_char_h() +
-                scale_size(FONT_LINESPACE, this->debugger->content_scale)));
-    this->total_cols = (int)std::round((int)this->inner_viewport.w / (int)this->debugger->get_content_char_w());
+    total_lines = (int)std::round(inner_viewport.h / (debugger->get_content_char_h() +
+                scale_size(FONT_LINESPACE, debugger->content_scale)));
+    total_cols = (int)std::round((int)inner_viewport.w / (int)debugger->get_content_char_w());
 }
 
 DBG_six502_window::DBG_six502_window(DBG_six502 *debugger, std::string name, char sym)
@@ -91,10 +91,10 @@ DBG_six502_window::DBG_six502_window(DBG_six502 *debugger, std::string name, cha
     this->name = name;
     this->sym = sym;
 
-    this->title_color = DBG_six502_window::__clr[DBG_CLR_DEFAULT];
-    this->border_color = DBG_six502_window::__clr[DBG_CLR_INACT];
+    title_color = DBG_six502_window::__clr[DBG_CLR_DEFAULT];
+    border_color = DBG_six502_window::__clr[DBG_CLR_INACT];
 
-    this->resize();
+    resize();
 }
 
 DBG_six502_window::~DBG_six502_window()
@@ -104,10 +104,10 @@ DBG_six502_window::~DBG_six502_window()
 
 void DBG_six502_window::draw()
 {
-    this->debugger->font_engine.render_box_title_color(this->debugger->dbgrnd, this->name,
-            &this->viewport, this->debugger->content_scale,
-            &this->title_color, &this->border_color);
-    SDL_RenderSetViewport(this->debugger->dbgrnd, &this->inner_viewport);
+    debugger->font_engine.render_box_title_color(debugger->dbgrnd, name,
+            &viewport, debugger->content_scale,
+            &title_color, &border_color);
+    SDL_RenderSetViewport(debugger->dbgrnd, &inner_viewport);
 }
 
 void DBG_six502_window::vrenderf(const std::string fmt, va_list args)
@@ -138,11 +138,11 @@ void DBG_six502_window::vrenderf(const std::string fmt, va_list args)
         newline_count += result[i] == '\n' ? 1 : 0;
     last_col = get_last_col(&result);
 
-    this->debugger->font_engine.render_grid(this->debugger->dbgrnd,
-            this->cursor_line, this->cursor_col, result, this->debugger->content_scale);
+    debugger->font_engine.render_grid(debugger->dbgrnd,
+            cursor_line, cursor_col, result, debugger->content_scale);
 
-    this->cursor_line += newline_count;
-    this->cursor_col = last_col == 0 ? 0 : this->cursor_col + last_col;
+    cursor_line += newline_count;
+    cursor_col = last_col == 0 ? 0 : cursor_col + last_col;
 }
 
 void DBG_six502_window::renderf(const std::string fmt, ...)
@@ -150,7 +150,7 @@ void DBG_six502_window::renderf(const std::string fmt, ...)
     va_list args;
     va_start(args, fmt);
 
-    this->vrenderf(fmt, args);
+    vrenderf(fmt, args);
 
     va_end(args);
 }
@@ -159,13 +159,13 @@ void DBG_six502_window::crenderf(SDL_Color *clr, const std::string fmt, ...)
 {
     va_list args;
 
-    this->debugger->font_engine.set_color(clr);
+    debugger->font_engine.set_color(clr);
 
     va_start(args, fmt);
-    this->vrenderf(fmt, args);
+    vrenderf(fmt, args);
     va_end(args);
 
-    this->debugger->font_engine.reset_color();
+    debugger->font_engine.reset_color();
 }
 
 void DBG_six502_window::crenderf(int clr, const std::string fmt, ...)
@@ -177,40 +177,45 @@ void DBG_six502_window::crenderf(int clr, const std::string fmt, ...)
 
     const SDL_Color *sdl_clr = &DBG_six502_window::__clr[clr];
 
-    this->debugger->font_engine.set_color(sdl_clr);
+    debugger->font_engine.set_color(sdl_clr);
 
     va_start(args, fmt);
-    this->vrenderf(fmt, args);
+    vrenderf(fmt, args);
     va_end(args);
 
-    this->debugger->font_engine.reset_color();
+    debugger->font_engine.reset_color();
+}
+
+void DBG_six502_window::draw_running() {
+    DBG_six502_window::draw();
+    crenderf(DBG_CLR_GREY, "\n CPU IS RUNNING...\n\n BREAK CPU TO\n SEE THE STATE");
 }
 
 void DBG_six502_wcpustate::draw() {
     DBG_six502_window::draw();
 
-    std::unique_lock<std::mutex> ul_dbg_run_lock(this->debugger->run_lock, std::try_to_lock);
+    std::unique_lock<std::mutex> ul_dbg_run_lock(debugger->run_lock, std::try_to_lock);
     if (!ul_dbg_run_lock.owns_lock())
         return;
 
     BUS_six502 *bus;
     CPU_six502 *cpu;
 
-    bus = this->debugger->get_bus();
+    bus = debugger->get_bus();
     cpu = bus->cpu;
 
-    this->crenderf(DBG_CLR_YELLOW, "OP     : %02X (%s)\n", cpu->ictx.opcode, cpu->ictx.ins->readable.c_str());
-    this->renderf("ABS    : %04X\n", cpu->ictx.abs);
-    this->renderf("IMM    : %02X\n", cpu->ictx.imm);
-    this->renderf("REL    : %04X\n", cpu->ictx.rel_d);
-    this->crenderf(DBG_CLR_YELLOW, "PC     : %04X\n", cpu->PC);
-    this->renderf("STKP   : %02X\n", cpu->STKP);
-    this->renderf("A      : %02X\n", cpu->A);
-    this->renderf("X      : %02X\n", cpu->X);
-    this->renderf("Y      : %02X\n", cpu->Y);
+    crenderf(DBG_CLR_YELLOW, "OP     : %02X (%s)\n", cpu->ictx.opcode, cpu->ictx.ins->readable.c_str());
+    renderf("ABS    : %04X\n", cpu->ictx.abs);
+    renderf("IMM    : %02X\n", cpu->ictx.imm);
+    renderf("REL    : %04X\n", cpu->ictx.rel_d);
+    crenderf(DBG_CLR_YELLOW, "PC     : %04X\n", cpu->PC);
+    renderf("STKP   : %02X\n", cpu->STKP);
+    renderf("A      : %02X\n", cpu->A);
+    renderf("X      : %02X\n", cpu->X);
+    renderf("Y      : %02X\n", cpu->Y);
 
-    this->renderf("FLAGS  : CZIDBUON\n");
-    this->renderf(" (%02X)  : %1u%1u%1u%1u%1u%1u%1u%1u\n\n",
+    renderf("FLAGS  : CZIDBUON\n");
+    renderf(" (%02X)  : %1u%1u%1u%1u%1u%1u%1u%1u\n\n",
             cpu->STATUS,
             !!cpu->get_flag(FLAG_CARRY),
             !!cpu->get_flag(FLAG_ZERO),
@@ -227,7 +232,7 @@ void DBG_six502_wcpustate::draw() {
 void DBG_six502_wdisasm::draw() {
     DBG_six502_window::draw();
 
-    std::unique_lock<std::mutex> ul_dbg_run_lock(this->debugger->run_lock, std::try_to_lock);
+    std::unique_lock<std::mutex> ul_dbg_run_lock(debugger->run_lock, std::try_to_lock);
     if (!ul_dbg_run_lock.owns_lock())
         return;
 
@@ -241,7 +246,7 @@ void DBG_six502_wdisasm::draw() {
     CPU_six502 *cpu;
     DEV_six502 *dev;
 
-    bus = this->debugger->dbgbus;
+    bus = debugger->dbgbus;
     cpu = bus->cpu;
 
     pc_addr = cpu->PC;
@@ -249,36 +254,36 @@ void DBG_six502_wdisasm::draw() {
 
     dev = bus->get_device_at_addr(pc_addr);
     if (!dev) {
-        this->crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
+        crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
         return;
     }
 
-    bus->fetch_instructions(pc_addr, instrs, this->total_lines - 5, &num);
+    bus->fetch_instructions(pc_addr, instrs, total_lines - 5, &num);
 
     if (num == 0) {
-        this->crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
+        crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
         return;
     }
 
-    this->renderf(" DEVICE: ");
-    this->crenderf(DBG_CLR_OK, "%s", dev->name.c_str());
-    this->crenderf(DBG_CLR_GREY, " [%04X : %04X]\n\n", dev->iorange.hi, dev->iorange.lo);
+    renderf(" DEVICE: ");
+    crenderf(DBG_CLR_OK, "%s", dev->name.c_str());
+    crenderf(DBG_CLR_GREY, " [%04X : %04X]\n\n", dev->iorange.hi, dev->iorange.lo);
 
-    this->crenderf(DBG_CLR_GREY, " ADDR  OP  INS  ADDR ABS   REL   IMM\n\n");
+    crenderf(DBG_CLR_GREY, " ADDR  OP  INS  ADDR ABS   REL   IMM\n\n");
 
     for (u16 i = 0; i < num; i++) {
         bool is_breakpoint = false;
         bool is_watchpoint = false;
         cur_ins = &instrs[i];
 
-        for (auto it = this->debugger->breakpoints.begin(); it != this->debugger->breakpoints.end(); ++it) {
+        for (auto it = debugger->breakpoints.begin(); it != debugger->breakpoints.end(); ++it) {
             if (*it == cur_ins->opaddr) {
                 is_breakpoint = true;
                 break;
             }
         }
 
-        for (auto it = this->debugger->watchpoints.begin(); it != this->debugger->watchpoints.end(); ++it) {
+        for (auto it = debugger->watchpoints.begin(); it != debugger->watchpoints.end(); ++it) {
             if (*it == cur_ins->abs) {
                 is_watchpoint = true;
                 break;
@@ -287,27 +292,27 @@ void DBG_six502_wdisasm::draw() {
 
         if (cur_ins->opaddr == cpu->PC) {
             if (is_breakpoint)
-                this->crenderf(DBG_CLR_RED, "@");
+                crenderf(DBG_CLR_RED, "@");
             else if (is_watchpoint)
-                this->crenderf(DBG_CLR_ORANGE, "@");
+                crenderf(DBG_CLR_ORANGE, "@");
             else
-                this->crenderf(DBG_CLR_YELLOW, ">");
+                crenderf(DBG_CLR_YELLOW, ">");
 
-            this->crenderf(DBG_CLR_YELLOW, "%04X: %02X", cur_ins->opaddr, cur_ins->opcode);
+            crenderf(DBG_CLR_YELLOW, "%04X: %02X", cur_ins->opaddr, cur_ins->opcode);
         } else {
             if (is_breakpoint)
-                this->crenderf(DBG_CLR_RED, "@");
+                crenderf(DBG_CLR_RED, "@");
             else if (is_watchpoint)
-                this->crenderf(DBG_CLR_ORANGE, "@");
+                crenderf(DBG_CLR_ORANGE, "@");
             else
-                this->renderf(" ");
+                renderf(" ");
 
-            this->crenderf(DBG_CLR_GREY, "%04X: ", cur_ins->opaddr);
+            crenderf(DBG_CLR_GREY, "%04X: ", cur_ins->opaddr);
 
-            this->renderf("%02X", cur_ins->opcode);
+            renderf("%02X", cur_ins->opcode);
         }
 
-        this->renderf("  %s  %s  %04X  %04X  %02X\n",
+        renderf("  %s  %s  %04X  %04X  %02X\n",
                 cur_ins->ins->readable.c_str(),
                 cur_ins->ins->a_readable.c_str(),
                 cur_ins->abs, cur_ins->rel_d, cur_ins->imm);
@@ -317,46 +322,46 @@ void DBG_six502_wdisasm::draw() {
 void DBG_six502_whelp::draw() {
     DBG_six502_window::draw();
 
-    this->crenderf(DBG_CLR_ORANGE, "[Q]");
-    this->renderf("UIT  ");
-    this->crenderf(DBG_CLR_ORANGE, "[R]");
-    this->renderf("ESTART  ");
-    this->crenderf(DBG_CLR_ORANGE, "[B]");
-    this->renderf("REAK/CONTINUE  ");
-    this->crenderf(DBG_CLR_ORANGE, "[SPACE] ");
-    this->renderf("DEBUGGER STEP");
+    crenderf(DBG_CLR_ORANGE, "[Q]");
+    renderf("UIT  ");
+    crenderf(DBG_CLR_ORANGE, "[R]");
+    renderf("ESTART  ");
+    crenderf(DBG_CLR_ORANGE, "[B]");
+    renderf("REAK/CONTINUE  ");
+    crenderf(DBG_CLR_ORANGE, "[SPACE] ");
+    renderf("DEBUGGER STEP");
 }
 
 void DBG_six502_wmem::draw() {
     DBG_six502_window::draw();
-    
-    std::unique_lock<std::mutex> ul_dbg_run_lock(this->debugger->run_lock, std::try_to_lock);
+
+    std::unique_lock<std::mutex> ul_dbg_run_lock(debugger->run_lock, std::try_to_lock);
     if (!ul_dbg_run_lock.owns_lock())
         return;
 
-    BUS_six502 *bus = this->debugger->get_bus();
+    BUS_six502 *bus = debugger->get_bus();
     CPU_six502 *cpu = bus->cpu;
 
     DEV_six502 *dev;
     dev = bus->get_device_at_addr(cpu->PC);
     if (!dev) {
-        this->crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
+        crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
         return;
     }
 
-    this->renderf(" DEVICE: ");
-    this->crenderf(DBG_CLR_OK, "%s\n", dev->name.c_str());
+    renderf(" DEVICE: ");
+    crenderf(DBG_CLR_OK, "%s\n", dev->name.c_str());
 
     static const int bytes_per_line = 4;
     databus_t buf[MEM_MAX_256B];
     int mem_til_end = dev->iorange.lo - cpu->PC;
 
     if (mem_til_end < 0) {
-        this->crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
+        crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
         return;
     }
 
-    u16 fetch_size = std::min(mem_til_end, (int)((this->total_lines - 1) * bytes_per_line) - 1);
+    u16 fetch_size = std::min(mem_til_end, (int)((total_lines - 1) * bytes_per_line) - 1);
     u16 bytes_read;
     addr_range_t fetch_range;
     fill_addr_range(&fetch_range, cpu->PC, cpu->PC + fetch_size);
@@ -364,22 +369,22 @@ void DBG_six502_wmem::draw() {
     bus->fetch_device_data(fetch_range, buf, &bytes_read);
 
     if (bytes_read == 0) {
-        this->crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
+        crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
         return;
     }
 
     u16 k = 0;
     for (int i = 0; i < bytes_read; i++) {
         if (k == 0)
-            this->crenderf(DBG_CLR_GREY, "%04X: ", cpu->PC + i);
+            crenderf(DBG_CLR_GREY, "%04X: ", cpu->PC + i);
 
         if (i == 0)
-            this->crenderf(DBG_CLR_YELLOW, "%02X ", buf[i]);
+            crenderf(DBG_CLR_YELLOW, "%02X ", buf[i]);
         else
-            this->renderf("%02X ", buf[i]);
+            renderf("%02X ", buf[i]);
 
         if (k == bytes_per_line - 1) {
-            this->renderf("\n");
+            renderf("\n");
             k = 0;
         } else {
             k++;
@@ -390,11 +395,11 @@ void DBG_six502_wmem::draw() {
 void DBG_six502_wstack::draw() {
     DBG_six502_window::draw();
 
-    std::unique_lock<std::mutex> ul_dbg_run_lock(this->debugger->run_lock, std::try_to_lock);
+    std::unique_lock<std::mutex> ul_dbg_run_lock(debugger->run_lock, std::try_to_lock);
     if (!ul_dbg_run_lock.owns_lock())
         return;
 
-    BUS_six502 *bus = this->debugger->get_bus();
+    BUS_six502 *bus = debugger->get_bus();
     CPU_six502 *cpu = bus->cpu;
 
     addr_t abs_sp_start = (STKP_PAGE_RESET | STKP_ADDR_RESET);
@@ -403,22 +408,22 @@ void DBG_six502_wstack::draw() {
     DEV_six502 *dev;
     dev = bus->get_device_at_addr(abs_sp);
     if (!dev) {
-        this->crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
+        crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
         return;
     }
 
-    this->renderf(" DEVICE: ");
-    this->crenderf(DBG_CLR_OK, "%s\n", dev->name.c_str());
+    renderf(" DEVICE: ");
+    crenderf(DBG_CLR_OK, "%s\n", dev->name.c_str());
 
     u16 stack_size = abs_sp_start - abs_sp;
     if (stack_size <= 0) {
-        this->crenderf(DBG_CLR_GREY, "(STACK IS EMPTY)\n");
+        crenderf(DBG_CLR_GREY, "(STACK IS EMPTY)\n");
         return;
     }
 
     static const int bytes_per_line = 4;
     databus_t buf[MEM_MAX_256B];
-    u16 fetch_size = std::min((int)stack_size, (int)((this->total_lines - 1) * bytes_per_line) - 1);
+    u16 fetch_size = std::min((int)stack_size, (int)((total_lines - 1) * bytes_per_line) - 1);
     u16 bytes_read;
     addr_range_t fetch_range;
     fill_addr_range(&fetch_range, abs_sp, abs_sp + fetch_size);
@@ -426,22 +431,22 @@ void DBG_six502_wstack::draw() {
     bus->fetch_device_data(fetch_range, buf, &bytes_read);
 
     if (bytes_read == 0) {
-        this->crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
+        crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
         return;
     }
 
     u16 k = 0;
     for (int i = 0; i < bytes_read; i++) {
         if (k == 0)
-            this->crenderf(DBG_CLR_GREY, "%04X: ", abs_sp + i);
+            crenderf(DBG_CLR_GREY, "%04X: ", abs_sp + i);
 
         if (i == 0)
-            this->crenderf(DBG_CLR_YELLOW, "%02X ", buf[i]);
+            crenderf(DBG_CLR_YELLOW, "%02X ", buf[i]);
         else
-            this->renderf("%02X ", buf[i]);
+            renderf("%02X ", buf[i]);
 
         if (k == bytes_per_line - 1) {
-            this->renderf("\n");
+            renderf("\n");
             k = 0;
         } else {
             k++;
@@ -453,151 +458,155 @@ void DBG_six502_wstack::draw() {
 
 inline int DBG_six502::get_content_char_w()
 {
-    return scale_size(this->font_engine.get_char_width(), this->content_scale);
+    return scale_size(font_engine.get_char_width(), content_scale);
 }
 
 inline int DBG_six502::get_content_char_h()
 {
-    return scale_size(this->font_engine.get_char_height(), this->content_scale);
+    return scale_size(font_engine.get_char_height(), content_scale);
 }
 
 inline int DBG_six502::get_title_char_w()
 {
-    return scale_size(this->font_engine.get_char_width(), this->title_scale);
+    return scale_size(font_engine.get_char_width(), title_scale);
 }
 
 inline int DBG_six502::get_title_char_h()
 {
-    return scale_size(this->font_engine.get_char_height(), this->title_scale);
+    return scale_size(font_engine.get_char_height(), title_scale);
 }
 
 inline void DBG_six502::calc_scales()
 {
     int char_w, char_h;
 
-    if (!this->dbgwin)
+    if (!dbgwin)
         return;
 
-    SDL_GetWindowSize(this->dbgwin, &this->dbgwin_w, &this->dbgwin_h);
+    SDL_GetWindowSize(dbgwin, &dbgwin_w, &dbgwin_h);
 
-    this->title_scale = (float)((float)this->dbgwin_w / 2000);
-    this->title_scale = this->title_scale > TITLE_BASE_SCALE ?
-        TITLE_BASE_SCALE : this->title_scale;
-    this->title_scale = this->title_scale < TITLE_MIN_SCALE ?
-        TITLE_MIN_SCALE : this->title_scale;
+    title_scale = (float)((float)dbgwin_w / 2000);
+    title_scale = title_scale > TITLE_BASE_SCALE ?
+        TITLE_BASE_SCALE : title_scale;
+    title_scale = title_scale < TITLE_MIN_SCALE ?
+        TITLE_MIN_SCALE : title_scale;
 
-    char_w = this->get_title_char_w();
-    char_h = this->get_title_char_h();
+    char_w = get_title_char_w();
+    char_h = get_title_char_h();
 
-    this->wspace_w = this->dbgwin_w - char_w * 2 - TITLE_OFFSET * 2 - CONTENT_OFFSET * 2;
-    this->wspace_h = this->dbgwin_h - char_h * 2 - TITLE_OFFSET * 2 - CONTENT_OFFSET * 2;
+    wspace_w = dbgwin_w - char_w * 2 - TITLE_OFFSET * 2 - CONTENT_OFFSET * 2;
+    wspace_h = dbgwin_h - char_h * 2 - TITLE_OFFSET * 2 - CONTENT_OFFSET * 2;
 
-    this->content_scale = (float)((float)this->dbgwin_w / 2800);
-    this->content_scale = this->content_scale > CONTENT_BASE_SCALE ?
-        CONTENT_BASE_SCALE : this->content_scale;
-    this->content_scale = this->content_scale < CONTENT_MIN_SCALE ?
-        CONTENT_MIN_SCALE : this->content_scale;
+    content_scale = (float)((float)dbgwin_w / 2800);
+    content_scale = content_scale > CONTENT_BASE_SCALE ?
+        CONTENT_BASE_SCALE : content_scale;
+    content_scale = content_scale < CONTENT_MIN_SCALE ?
+        CONTENT_MIN_SCALE : content_scale;
 
 }
 
 DBG_six502::DBG_six502()
 {
-    this->dbgwin = nullptr;
-    this->dbgrnd = nullptr;
-    this->dbgbus = nullptr;
+    dbgwin = nullptr;
+    dbgrnd = nullptr;
+    dbgbus = nullptr;
 
-    this->windows = nullptr;
+    windows = nullptr;
 
-    this->blueclr = BLUECLR_DEFAULT;
-    this->bgchange_next_ticks = 0;
-    this->blueclr_mod = -1;
+    blueclr = BLUECLR_DEFAULT;
+    bgchange_next_ticks = 0;
+    blueclr_mod = -1;
 
-    this->wspace_w = 0;
-    this->wspace_h = 0;
+    wspace_w = 0;
+    wspace_h = 0;
 
-    this->step_mode = true;
-    this->steps_left = 0;
+    step_mode = true;
+    steps_left = 0;
 
-    this->has_custom_pc_reset = false;
+    has_custom_pc_reset = false;
 
-    this->breakpoints = {};
-    this->watchpoints = {};
+    breakpoints = {};
+    watchpoints = {};
 
-    this->run_thread = nullptr;
+    run_thread = nullptr;
+    ticks_after_relax = 0;
+    nticks_before_relax = 0;
 }
 
 DBG_six502::DBG_six502(SDL_Window *win, SDL_Renderer *rnd, BUS_six502 *bus)
 {
-    this->dbgwin = win;
-    this->dbgrnd = rnd;
-    this->dbgbus = bus;
+    dbgwin = win;
+    dbgrnd = rnd;
+    dbgbus = bus;
 
-    this->windows = nullptr;
+    windows = nullptr;
 
-    this->wspace_w = 0;
-    this->wspace_h = 0;
+    wspace_w = 0;
+    wspace_h = 0;
 
-    this->step_mode = true;
-    this->steps_left = 0;
+    step_mode = true;
+    steps_left = 0;
 
     has_custom_pc_reset = false;
 
     if (!win)
         return;
 
-    SDL_SetWindowTitle(this->dbgwin, DBG_six502::__dbg_window_name.c_str());
+    SDL_SetWindowTitle(dbgwin, DBG_six502::__dbg_window_name.c_str());
 
-    this->font_engine.load_font_file(this->dbgrnd, this->dbgwin, DBG_six502::__keypound_font_file);
-    this->calc_scales();
+    font_engine.load_font_file(dbgrnd, dbgwin, DBG_six502::__keypound_font_file);
+    calc_scales();
 
-    this->windows = new DBG_six502_window* [WINDOW_COUNT];
-    this->windows[0] = new DBG_six502_wcpustate(this, "CPU STATE", 'C');
-    this->windows[1] = new DBG_six502_wdisasm(this, "DISASM", 'D');
-    this->windows[2] = new DBG_six502_whelp(this, "HELP", 'H');
-    this->windows[3] = new DBG_six502_wmem(this, "MEMORY", 'M');
-    this->windows[4] = new DBG_six502_wstack(this, "STACK", 'S');
+    windows = new DBG_six502_window* [NR_DBGWIN];
+    windows[DBGWIN_CPUSTATE] = new DBG_six502_wcpustate(this, "CPU STATE", 'C');
+    windows[DBGWIN_DISASM] = new DBG_six502_wdisasm(this, "DISASM", 'D');
+    windows[DBGWIN_HELP] = new DBG_six502_whelp(this, "HELP", 'H');
+    windows[DBGWIN_MEMORY] = new DBG_six502_wmem(this, "MEMORY", 'M');
+    windows[DBGWIN_STACK] = new DBG_six502_wstack(this, "STACK", 'S');
 
-    for (int i = 0; i < WINDOW_COUNT; i++)
-        this->windows[i]->resize();
+    for (int i = 0; i < NR_DBGWIN; i++)
+        windows[i]->resize();
 
-    this->blueclr = BLUECLR_DEFAULT;
-    this->bgchange_next_ticks = 0;
-    this->blueclr_mod = -1;
+    blueclr = BLUECLR_DEFAULT;
+    bgchange_next_ticks = 0;
+    blueclr_mod = -1;
 
-    this->breakpoints = {};
-    this->watchpoints = {};
+    breakpoints = {};
+    watchpoints = {};
 
-    this->run_thread = nullptr;
+    run_thread = nullptr;
+    ticks_after_relax = 0;
+    nticks_before_relax = 0;
 }
 
 DBG_six502::~DBG_six502()
 {
-    if (this->windows) {
-        for (int i = 0; i < WINDOW_COUNT; i++)
-            delete this->windows[i];
-        delete [] this->windows;
+    if (windows) {
+        for (int i = 0; i < NR_DBGWIN; i++)
+            delete windows[i];
+        delete [] windows;
     }
 
-    this->dbg_quit = true;
-    if (this->run_thread)
-        this->run_thread->join();
+    dbg_quit = true;
+    if (run_thread)
+        run_thread->join();
 
-    delete this->run_thread;
+    delete run_thread;
 }
 
 SDL_Window *DBG_six502::get_window()
 {
-    return this->dbgwin;
+    return dbgwin;
 }
 
 SDL_Renderer *DBG_six502::get_renderer()
 {
-    return this->dbgrnd;
+    return dbgrnd;
 }
 
 BUS_six502 *DBG_six502::get_bus()
 {
-    return this->dbgbus;
+    return dbgbus;
 }
 
 result_t DBG_six502::set_window(SDL_Window *win)
@@ -605,7 +614,7 @@ result_t DBG_six502::set_window(SDL_Window *win)
     if (!win)
         return SIX502_RET_BAD_INPUT;
 
-    this->dbgwin = win;
+    dbgwin = win;
     return SIX502_RET_SUCCESS;
 }
 
@@ -614,17 +623,17 @@ result_t DBG_six502::set_renderer(SDL_Renderer *rnd)
     if (!rnd)
         return SIX502_RET_BAD_INPUT;
 
-    this->dbgrnd = rnd;
+    dbgrnd = rnd;
     return SIX502_RET_SUCCESS;
 }
 
 result_t DBG_six502::connect_bus(BUS_six502 *bus)
 {
-    std::unique_lock<std::mutex> ul_run_lock(this->run_lock);
+    std::unique_lock<std::mutex> ul_run_lock(run_lock);
     if (!bus)
         return SIX502_RET_BAD_INPUT;
 
-    this->dbgbus = bus;
+    dbgbus = bus;
     return SIX502_RET_SUCCESS;
 }
 
@@ -633,14 +642,14 @@ void DBG_six502::draw_title_frame()
     SDL_Rect r = {
         .x = TITLE_OFFSET,
         .y = TITLE_OFFSET,
-        .w = this->dbgwin_w - TITLE_OFFSET,
-        .h = this->dbgwin_h - TITLE_OFFSET
+        .w = dbgwin_w - TITLE_OFFSET,
+        .h = dbgwin_h - TITLE_OFFSET
     };
 
-    int offset = (int)std::round((r.w / this->get_title_char_w()) / 2) - DBG_six502::__dbg_window_name.size() / 1.7;
+    int offset = (int)std::round((r.w / get_title_char_w()) / 2) - DBG_six502::__dbg_window_name.size() / 1.7;
 
-    this->font_engine.render_box_title_color_offset(this->dbgrnd, DBG_six502::__dbg_window_name,
-            offset, &r, this->title_scale,
+    font_engine.render_box_title_color_offset(dbgrnd, DBG_six502::__dbg_window_name,
+            offset, &r, title_scale,
             &DBG_six502_window::__clr[DBG_CLR_TITLE],
             &DBG_six502_window::__clr[DBG_CLR_TITLE_BORDER]);
 }
@@ -650,163 +659,181 @@ void DBG_six502::draw_interface()
     u64 now = SDL_GetTicks64();
     SDL_Rect prev_viewport;
 
-    if (now >= this->bgchange_next_ticks) {
-        this->blueclr += this->blueclr_mod;
-        if (this->blueclr >= BLUECLR_MAX)
-            this->blueclr_mod = -1;
-        else if (this->blueclr <= BLUECLR_MIN)
-            this->blueclr_mod = 2;
+    if (now >= bgchange_next_ticks) {
+        blueclr += blueclr_mod;
+        if (blueclr >= BLUECLR_MAX)
+            blueclr_mod = -1;
+        else if (blueclr <= BLUECLR_MIN)
+            blueclr_mod = 2;
 
-        this->bgchange_next_ticks = now + BGCHANGE_FREQUENCY;
+        bgchange_next_ticks = now + BGCHANGE_FREQUENCY;
     }
 
-    SDL_SetRenderDrawColor(this->dbgrnd, 10, 5, blueclr, 255);
-    SDL_RenderClear(this->dbgrnd);
+    SDL_SetRenderDrawColor(dbgrnd, 10, 5, blueclr, 255);
+    SDL_RenderClear(dbgrnd);
 
-    this->draw_title_frame();
-    for (int i = 0; i < WINDOW_COUNT; i++) {
-        SDL_RenderGetViewport(this->dbgrnd, &prev_viewport);
+    draw_title_frame();
+    for (int i = 0; i < NR_DBGWIN; i++) {
+        SDL_RenderGetViewport(dbgrnd, &prev_viewport);
 
-        this->windows[i]->cursor_line = 0;
-        this->windows[i]->cursor_col = 0;
+        windows[i]->cursor_line = 0;
+        windows[i]->cursor_col = 0;
 
-        this->font_engine.reset_color();
+        font_engine.reset_color();
+       
+        if (step_mode || i == DBGWIN_HELP)
+            windows[i]->draw();
+        else
+            windows[i]->draw_running();
 
-        this->windows[i]->draw();
-
-        SDL_RenderSetViewport(this->dbgrnd, &prev_viewport);
+        SDL_RenderSetViewport(dbgrnd, &prev_viewport);
     }
 }
 
 result_t DBG_six502::update()
 {
-    this->draw_interface();
+    draw_interface();
     return SIX502_RET_SUCCESS;
 }
 
 void DBG_six502::step_mode_on()
 {
-    this->step_mode = true;
-    this->steps_left = 0;
+    step_mode = true;
+    steps_left = 0;
 
-    this->step_mode_cv.notify_one();
-    this->cpu_awake_cv.notify_one();
-    this->cpu_relax_flag = false;
+    step_mode_cv.notify_one();
+    cpu_awake_cv.notify_one();
+    cpu_relax_flag = false;
 }
 
 void DBG_six502::step_mode_off()
 {
-    this->step_mode = false;
-    this->steps_left = 0;
+    step_mode = false;
+    steps_left = 0;
 
-    this->step_mode_cv.notify_one();
-    this->cpu_awake_cv.notify_one();
-    this->cpu_relax_flag = false;
+    step_mode_cv.notify_one();
+    cpu_awake_cv.notify_one();
+    cpu_relax_flag = false;
 }
 
 void DBG_six502::step_mode_toggle()
 {
-    this->step_mode = !this->step_mode;
-    this->steps_left = 0;
+    step_mode = !step_mode;
+    steps_left = 0;
 
-    this->step_mode_cv.notify_one();
-    this->cpu_awake_cv.notify_one();
-    this->cpu_relax_flag = false;
+    step_mode_cv.notify_one();
+    cpu_awake_cv.notify_one();
+    cpu_relax_flag = false;
 }
 
 void DBG_six502::step()
 {
-    if (this->step_mode)
-        this->steps_left++;
-    this->step_mode_cv.notify_one();
-    this->cpu_awake_cv.notify_one();
-    this->cpu_relax_flag = false;
+    if (step_mode)
+        steps_left++;
+    step_mode_cv.notify_one();
+    cpu_awake_cv.notify_one();
+    cpu_relax_flag = false;
 }
 
 void DBG_six502::set_breakpoints(std::vector<addr_t> breaks)
 {
-    this->breakpoints = breaks;
+    breakpoints = breaks;
 }
 
 void DBG_six502::set_watchpoints(std::vector<addr_t> watch)
 {
-    this->watchpoints = watch;
+    watchpoints = watch;
 }
 
 void DBG_six502::set_custom_pc_reset(addr_t pc)
 {
-    this->custom_pc_reset = pc;
-    this->has_custom_pc_reset = true;
+    custom_pc_reset = pc;
+    has_custom_pc_reset = true;
 }
 
 void DBG_six502::unset_custom_pc_reset()
 {
-    this->has_custom_pc_reset = false;
+    has_custom_pc_reset = false;
 }
 
 void DBG_six502::cpu_reset()
 {
-    std::unique_lock<std::mutex> ul_run_lock(this->run_lock);
-    this->dbgbus->cpu->reset();
-    if (this->has_custom_pc_reset)
-        this->dbgbus->cpu->PC = this->custom_pc_reset;
+    std::unique_lock<std::mutex> ul_run_lock(run_lock);
+    dbgbus->cpu->reset();
+    if (has_custom_pc_reset)
+        dbgbus->cpu->PC = custom_pc_reset;
 
-    this->dbgbus->cpu->dryrun();
+    dbgbus->cpu->dryrun();
 
-    this->step_mode_on();
+    step_mode_on();
 }
 
 void DBG_six502::relax_cpu()
 {
-    if (this->run_thread && !this->step_mode)
-        this->cpu_relax_flag = true;
+    if (run_thread && !step_mode)
+        cpu_relax_flag = true;
 }
 
 void DBG_six502::relax_cpu(std::chrono::nanoseconds t)
 {
-    this->relax_cpu();
-    this->cpu_relax_time = t;
+    relax_cpu();
+    cpu_relax_time = t;
 }
 
 result_t DBG_six502::run_cpu_once()
 {
-    if (this->cpu_relax_flag) {
+    if (cpu_relax_flag) {
         std::mutex relax_lock;
         std::unique_lock<std::mutex> ul_relax_lock(relax_lock);
-        this->cpu_awake_cv.wait_for(ul_relax_lock, this->cpu_relax_time);
-        ul_relax_lock.unlock();
+        if (cpu_relax_time > std::chrono::nanoseconds(0))
+            cpu_awake_cv.wait_for(ul_relax_lock, cpu_relax_time);
+        else {
+            cpu_awake_cv.wait(ul_relax_lock);
+        }
+        ticks_after_relax = 0;
+        cpu_relax_flag = false;
     }
 
-    std::unique_lock<std::mutex> ul_run_lock(this->run_lock);
-    this->dbgbus->cpu->dryrun();
+    std::unique_lock<std::mutex> ul_run_lock(run_lock);
+    dbgbus->cpu->dryrun();
 
-    if (!this->step_mode) {
-        for (auto it = this->breakpoints.begin(); it != this->breakpoints.end(); ++it) {
-            if (*it == this->dbgbus->cpu->PC) {
-                this->step_mode_on();
+    if (!step_mode) {
+        if (dbgbus->cpu->aux_state & CPU_JUMP_SELF)
+            breakpoints.push_back(dbgbus->cpu->PC);
+
+        for (auto it = breakpoints.begin(); it != breakpoints.end(); ++it) {
+            if (*it == dbgbus->cpu->PC) {
+                step_mode_on();
                 return SIX502_RET_SUCCESS;
             }
         }
 
-        for (auto it = this->watchpoints.begin(); it != this->watchpoints.end(); ++it) {
-            if (*it == this->dbgbus->cpu->ictx.abs) {
-                this->step_mode_on();
+        for (auto it = watchpoints.begin(); it != watchpoints.end(); ++it) {
+            if (*it == dbgbus->cpu->ictx.abs) {
+                step_mode_on();
                 return SIX502_RET_SUCCESS;
             }
         }
 
-        this->dbgbus->cpu->tick();
+        dbgbus->cpu->tick();
+        if (nticks_before_relax > 0) {
+            ticks_after_relax++;
 
-        return SIX502_RET_SUCCESS;
+            if (ticks_after_relax >= nticks_before_relax) {
+                ticks_after_relax = 0;
+                relax_cpu();
+            }
+        }
     } else {
         ul_run_lock.unlock();
+        ticks_after_relax = 0;
         std::mutex step_mode_cv_lock;
         std::unique_lock<std::mutex> ul_step_mode_cv_lock(step_mode_cv_lock);
-        this->step_mode_cv.wait(ul_step_mode_cv_lock);
+        step_mode_cv.wait(ul_step_mode_cv_lock);
         ul_run_lock.lock();
-        while (this->steps_left > 0) {
-            this->dbgbus->cpu->runop_dbg();
-            this->steps_left -= this->steps_left == 0 ? 0 : 1;
+        while (steps_left > 0) {
+            dbgbus->cpu->runop_dbg();
+            steps_left -= steps_left == 0 ? 0 : 1;
         }
         ul_run_lock.unlock();
     }
@@ -816,45 +843,55 @@ result_t DBG_six502::run_cpu_once()
 
 result_t DBG_six502::run_cpu()
 {
-    while (!this->dbg_quit)
-        this->run_cpu_once();
+    while (!dbg_quit)
+        run_cpu_once();
 
     return SIX502_RET_SUCCESS;
 }
 
+void DBG_six502::awake_cpu()
+{
+    if (run_thread && cpu_relax_flag)
+        cpu_awake_cv.notify_one();
+}
+
 void DBG_six502::start_cpu()
 {
-    if (!this->run_thread)
-        this->run_thread = new std::thread(&DBG_six502::run_cpu, this);
-    else if (this->cpu_relax_flag)
-        this->cpu_awake_cv.notify_one();
+    if (!run_thread)
+        run_thread = new std::thread(&DBG_six502::run_cpu, this);
+    awake_cpu();
+}
+
+void DBG_six502::relax_cpu_each_nticks(u64 nticks)
+{
+    nticks_before_relax = nticks;
 }
 
 result_t DBG_six502::process_event(SDL_Event *ev)
 {
     if (ev->type == SDL_WINDOWEVENT) {
         if (ev->window.event == SDL_WINDOWEVENT_RESIZED) {
-            this->calc_scales();
-            for (int i = 0; i < WINDOW_COUNT; i++)
-                this->windows[i]->resize();
+            calc_scales();
+            for (int i = 0; i < NR_DBGWIN; i++)
+                windows[i]->resize();
         }
     } else if (ev->type == SDL_KEYDOWN) {
         switch (ev->key.keysym.sym) {
         case SDLK_r:
-            this->cpu_reset();
+            cpu_reset();
             break;
 
         case SDLK_b:
-            this->step_mode_toggle();
+            step_mode_toggle();
             break;
 
         case SDLK_SPACE:
-            this->step();
+            step();
             break;
 
         case SDLK_q:
-            this->dbg_quit = true;
-            this->step_mode_off();
+            dbg_quit = true;
+            step_mode_off();
             return SIX502_RET_QUIT;
         }
     }
