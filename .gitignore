@@ -2,4 +2,7 @@
 ops/*.o
 *.vim
 *.log
-six502_test
+tests/bin/*
+tests/obj/*
+.DS_store
+Makefile

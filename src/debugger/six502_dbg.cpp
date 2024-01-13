@@ -1,6 +1,6 @@
 #include "six502_dbg.h"
 
-const char *DBG_six502::__keypound_font_file = "./video/fonts/kpndf.png";
+const char *DBG_six502::__keypound_font_file = "./src/video/fonts/kpndf.png";
 const std::string DBG_six502::__dbg_window_name = "SIX502 DEBUGGER";
 
 const std::string DBG_six502::__interface[MARKUP_RES] = {

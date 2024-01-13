@@ -41,7 +41,7 @@ int main()
 
     SDL_Event event;
 
-    bus.load_from_file_64("tests/bin_files/6502_functional_test.bin");
+    bus.load_from_file_64("tests/6502_functional_test.bin");
 
     debugger.set_custom_pc_reset(0x0400);
     debugger.cpu_reset();
@@ -54,7 +54,7 @@ int main()
     u64 prev_ticks = next_ticks;
     u64 next_bgchange_ticks = SDL_GetTicks64() + 50;
 
-    debugger.relax_cpu_each_nticks(FREQUENCY_6502 / 60);
+    debugger.relax_cpu_each_nticks(FREQUENCY_6502);
     debugger.start_cpu();
     while(!done) {
         debugger.awake_cpu();
