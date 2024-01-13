@@ -64,7 +64,7 @@ __six502_addrm result_t CPU_six502::aABS()
 
     ictx.abs = MERGE16(ictx.aux82, ictx.aux81);
     read(ictx.abs, &ictx.imm);
-    
+
     return SIX502_RET_SUCCESS;
 }
 
@@ -76,7 +76,7 @@ __six502_addrm result_t CPU_six502::aABX()
 
     if (HI8(ictx.abs) != HI8(abs_prev))
         busy_ticks = 1;
-    
+
     read(ictx.abs, &ictx.imm);
 
     return SIX502_RET_SUCCESS;

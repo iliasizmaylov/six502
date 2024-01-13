@@ -54,7 +54,7 @@ int main()
     u64 prev_ticks = next_ticks;
     u64 next_bgchange_ticks = SDL_GetTicks64() + 50;
 
-    debugger.relax_cpu_each_nticks(FREQUENCY_6502);
+    debugger.relax_cpu_each_nticks(FREQUENCY_6502 / 30);
     debugger.start_cpu();
     while(!done) {
         debugger.awake_cpu();
@@ -78,11 +78,11 @@ int main()
             debugger.update();
 
             SDL_RenderPresent(rnd);
-            
+
             prev_ticks = next_ticks;
             next_ticks += 60;
         }
-       
+
         SDL_Delay(next_ticks - prev_ticks);
     }
 

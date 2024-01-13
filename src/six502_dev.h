@@ -15,11 +15,11 @@ public:
     addr_range_t iorange;
 
     devid_t id;
-    
+
     virtual result_t process_read(addr_t addr, databus_t *data) = 0;
     virtual result_t process_write(addr_t addr, databus_t data) = 0;
 
-    result_t fetch_data(addr_range_t range, 
+    result_t fetch_data(addr_range_t range,
             databus_t *data, u16 *num_bytes);
 };
 

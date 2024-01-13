@@ -1,6 +1,6 @@
 #include "six502_cpu.h"
 
-static __always_inline u8 __branch_on(bool cond, u16 *pc, 
+static __always_inline u8 __branch_on(bool cond, u16 *pc,
         const u16 rel, CPU_six502 *cpu)
 {
     addr_t pc_before = *pc;

@@ -680,7 +680,7 @@ void DBG_six502::draw_interface()
         windows[i]->cursor_col = 0;
 
         font_engine.reset_color();
-       
+
         if (step_mode || i == DBGWIN_HELP)
             windows[i]->draw();
         else

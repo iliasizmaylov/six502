@@ -107,7 +107,7 @@ result_t BUS_six502::fetch_instructions(addr_t start, struct instruction_ctx *ou
 
     if (!out || count == 0)
         return SIX502_RET_BAD_INPUT;
-    
+
     for (auto it = devices.begin(); it != devices.end(); ++it) {
         if ((*it)->process_read(start, &buf) == SIX502_RET_SUCCESS) {
             cpu->save_state();
