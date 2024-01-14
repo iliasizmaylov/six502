@@ -1,5 +1,7 @@
 # Default test file name
 DEFTEST 	= six502_test
+STTEST		= six502_test_st
+SHTEST		= six502_test_sh
 
 Q = @
 
@@ -32,14 +34,32 @@ ifeq ($(IS_STATIC_DBG), 1)
 	CXXFLAGS += $(SIX502DBG)
 endif
 
+# Output library file names
+# These values are valid for *unix systems
+# and will be overritten in an "Architecture
+# related stuff" section if the target system
+# is win32
+LIBNAME		= six502
+LIBSTNAME	= lib$(LIBNAME).a
+LIBSHNAME	= lib$(LIBNAME).so
+
 # Architecture related stuff
 TARGET_SYSTEM = ""
 
 TARGET_SYSTEM := $(shell uname -s)
 ifeq ($(OS), Windows_NT)
-	TARGET_SYSTEM = "WIN_32"
-	CXXFLAGS += -D__WIN_32__
+	TARGET_SYSTEM 	= "WIN_32"
+	CXXFLAGS 		+= -D__WIN_32__
+	LIBSTNAME		= $(LIBNAME).lib
+	LIBSHNAME 		= lib$(LIBNAME).dll
+	WIN32_IMPORTLIB	= lib$(LIBNAME).a
+	LDFLAGS_SIX502_SHARED	= -Wl,-rpath=. -L. -lsix502
+	LDFLAGS_SIX502_STATIC	= -L. -lsix502
+	LDFLAGS_SHARED			= -Wl,--out-implib,$(WIN32_IMPORTLIB)
 else
+	LDFLAGS_SIX502_SHARED	= -L. -lsix502
+	LDFLAGS_SIX502_STATIC	= -L. -lsix502
+
 	ifeq ($(TARGET_SYSTEM), Darwin)
 			OSX_SDL_FRAMEWORKS = -framework SDL2	\
 							-framework SDL2_ttf		\
@@ -51,13 +71,6 @@ else
 			CXXFLAGS += -D__LINUX__
 	endif
 endif
-
-# Library version
-LIBVER		= 0
-
-# Output library file names
-LIBSTNAME	= six502.a
-LIBSHNAME	= libsix502.so.$(LIBVER)
 
 # Common sources folder
 SRCDIR		:= src
@@ -83,6 +96,10 @@ VIDEOOBJDIR	:= $(VIDEODIR)/obj
 # Default test file sources and objects
 DEFTEST_SRC	:= $(TESTDIR)/$(DEFTEST).cpp
 DEFTEST_OBJ := $(TESTOBJDIR)/$(DEFTEST).o
+STTEST_SRC	:= $(TESTDIR)/$(STTEST).cpp
+STTEST_OBJ 	:= $(TESTOBJDIR)/$(STTEST).o
+SHTEST_SRC	:= $(TESTDIR)/$(SHTEST).cpp
+SHTEST_OBJ 	:= $(TESTOBJDIR)/$(SHTEST).o
 
 # Common source files and objects
 SOURCES		:= $(wildcard $(SRCDIR)/*.cpp)
@@ -116,24 +133,28 @@ ANSI_GREEN	= \e[32m
 
 # ---------------- Main make targets ----------------
 
+# Compile a static library with six502 debugger support
 static_dbg: info_static $(ALLOBJ)
 	$(Q)printf "Archiving objects into a static library $(ANSI_GREEN)$(LIBSTNAME)$(ANSI_RESET)\n"
 	$(Q)$(AR) $(AROPTS) $(LIBSTNAME) $(ALLOBJ)
 	$(Q)printf "\nBuild finished.\n"
 
+# Compile a static library without six502 debugger support
 static: info_static $(ALLOBJ_NODBG)
 	$(Q)printf "Archiving objects into a static library $(ANSI_GREEN)$(LIBSTNAME)$(ANSI_RESET)\n"
 	$(Q)$(AR) $(AROPTS) $(LIBSTNAME) $(ALLOBJ_NODBG)
 	$(Q)printf "\nBuild finished.\n"
 
+# Compile a shared library with six502 debugger support
 shared_dbg: info_shared $(ALLOBJ)
 	$(Q)printf "Linking into a shared library $(ANSI_GREEN)$(LIBSHNAME)$(ANSI_RESET)\n"
-	$(Q)$(CXX) -shared $(INCLUDES) $(ALLOBJ) -o $(LIBSHNAME) $(LDFLAGS)
+	$(Q)$(CXX) -shared $(INCLUDES) $(ALLOBJ) -o $(LIBSHNAME) $(LDFLAGS) $(LDFLAGS_SHARED)
 	$(Q)printf "\nBuild finished.\n"
 
+# Compile a shared library without six502 debugger support
 shared: info_shared $(ALLOBJ_NODBG)
 	$(Q)printf "Linking into a shared library $(ANSI_GREEN)$(LIBSHNAME)$(ANSI_RESET)\n"
-	$(Q)$(CXX) -shared $(INCLUDES) $(ALLOBJ_NODBG) -o $(LIBSHNAME) $(LDFLAGS)
+	$(Q)$(CXX) -shared $(INCLUDES) $(ALLOBJ_NODBG) -o $(LIBSHNAME) $(LDFLAGS) $(LDFLAGS_SHARED)
 	$(Q)printf "\nBuild finished.\n"
 
 # Default six502 test target
@@ -147,11 +168,40 @@ $(DEFTEST_OBJ):
 	$(Q)$(CXX) $(INCLUDES) $(CXXFLAGS) $(OSX_F) -c $(DEFTEST_SRC) -o $@
 	$(Q)printf "Compiled $(DEFTEST_OBJ)\n"
 
+# Test target that's compiled against a shared library
+test_shared: $(SHTEST)
+$(SHTEST): info_test $(SHTEST_OBJ)
+ifeq (, $(wildcard $(LIBSHNAME)))
+	$(error Can't link $(SHTEST): static library $(LIBSHNAME) has'n been built)
+endif
+	$(Q)printf "Linking into an executable $(ANSI_GREEN)$(TESTBINDIR)/$(SHTEST)$(ANSI_RESET)\n"
+	$(Q)$(CXX) $(INCLUDES) $(SHTEST_OBJ) -o $(TESTBINDIR)/$(SHTEST) $(LDFLAGS) $(LDFLAGS_SIX502_SHARED)
+	$(Q)printf "\nBuild finished.\n"
+$(SHTEST_OBJ):
+	$(Q)mkdir -p $(TESTOBJDIR)
+	$(Q)$(CXX) $(INCLUDES) $(CXXFLAGS) $(OSX_F) -c $(SHTEST_SRC) -o $@
+	$(Q)printf "Compiled $(SHTEST_OBJ)\n"
+
+# Test target that's compiled statically against a static library
+test_static: $(STTEST)
+$(STTEST): info_test $(STTEST_OBJ)
+ifeq (, $(wildcard $(LIBSTNAME)))
+	$(error Can't link $(STTEST): static library $(LIBSTNAME) has'n been built)
+endif
+	$(Q)printf "Linking into an executable $(ANSI_GREEN)$(TESTBINDIR)/$(STTEST)$(ANSI_RESET)\n"
+	$(Q)$(CXX) $(INCLUDES) $(STTEST_OBJ) -o $(TESTBINDIR)/$(STTEST) $(LDFLAGS) $(LDFLAGS_SIX502_STATIC)
+	$(Q)printf "\nBuild finished.\n"
+$(STTEST_OBJ):
+	$(Q)mkdir -p $(TESTOBJDIR)
+	$(Q)$(CXX) $(INCLUDES) $(CXXFLAGS) $(OSX_F) -c $(STTEST_SRC) -o $@
+	$(Q)printf "Compiled $(STTEST_OBJ)\n"
+
 .PHONY: clean
 clean:
 	$(Q)printf "Removing all $(ANSI_BOLD)SIX502$(ANSI_RESET) objects and executables..."
 	$(Q)rm -f $(TESTBINDIR)/$(DEFTEST) $(DEFTEST_OBJ) $(OBJECTS) $(OP_OBJECTS) $(SDL_OBJECTS) $(DBG_OBJECTS)
 	$(Q)rm -f $(LIBSTNAME) $(LIBSHNAME)
+	$(Q)rm -f $(SHTEST) $(STTEST)
 	$(Q)printf " $(ANSI_GREEN)Done$(ANSI_RESET)!\n"
 
 # ---------------- Make "subtargets" ----------------
