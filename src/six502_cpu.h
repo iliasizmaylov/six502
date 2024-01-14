@@ -30,11 +30,31 @@ enum __CPU_BUILTIN_STATS {
     RESET_TICKS     = 8         /* NR of ticks consumed by reset */
 };
 
+/* Custom CPU state that currenly only indicates
+ * three different conditions (apart from clear
+ * state which is an absence of any extra conditions)
+ */
 enum __CPU_AUX_STATES {
     CPU_STATE_CLEAR     = 0,
 
+    /* Non-error condition that indicates if stack pointer
+     * overlapped 0x00 back to 0xFF which is a normal 6502 behavior
+     */
     CPU_STACK_OVERFLOW  = (1 << 15),
+
+    /* Also a non-error condition but maybe indicative
+     * of a flaw in a program that's being run
+     * Indicates if there was a load from stack when
+     * stack pointer was set 0xFF
+     */
     CPU_STACK_EMPTY_POP = (1 << 14),
+
+    /* This condition is also not considered an error in
+     * 6502 cpu but could be a problem in a lot of scenarios
+     * like maybe a hard assert or something
+     * This flag is usefulf when running a six502 debugger
+     * because it will break at self jumps
+     */
     CPU_JUMP_SELF       = (1 << 13)
 };
 
@@ -108,6 +128,12 @@ private:
     void set_flags_nz(u16 tgt);
     void set_flags_nz(u8 tgt);
 
+    /* Runs one instruction at PC
+     * If debugger_on == true then CPU will not count
+     * ticks (or cycles) that executed instruction 
+     * takes to run which is done for six502 debugger
+     * single step mode
+     */
     result_t __runop(bool debugger_on);
 
 public:
@@ -124,8 +150,8 @@ public:
     u8 STATUS;  /* Status register */
     addr_t PC;  /* Program counter */
 
-    u16 aux_state;
-    u64 total_ticks;
+    u16 aux_state;      /* Custom CPU state */
+    u64 total_ticks;    /* Total 6502 ticks (cycles) since start */
 
     /* Bind a bus to this CPU */
     result_t bind(BUS_six502 *new_bus);
@@ -134,12 +160,32 @@ public:
     result_t nmi();     /* Non-Maskable interrupt handler */
     result_t reset();   /* CPU reset handler */
 
+    /* dryrun is just what it sounds like - it processes 
+     * one instruction at PC, fills this->ictx but doesn't 
+     * let the instructions to actually do it's business
+     * and affect the emulated system 
+     * It's used for debugger to gather info about instruction
+     * i.e. what's the address mode, immediate value or absolute
+     * address, zp offset, etc. */
     result_t dryrun();
-    result_t runop();
-    result_t runop_dbg();
+
+    result_t runop();               /* Run single instruction (non-debugger mode) */
+    result_t runop_dbg();           /* Run single instruction (debgger mode) */
     result_t tick();                /* Processor tick (i.e. clock tick handler) */
     result_t tick_for(u64 nticks);
 
+    /* This struct describes a full state of a CPU so that
+     * we can use data stored in here to be able to revert
+     * to a given state
+     *
+     * Used when six502 debugger is doing a disassembly
+     * 
+     * Basically it's here in order for us to be able to
+     * do multiple this->dryrun() in order to get a 
+     * disassembly for a chunk of memory 
+     *
+     * TODO: It'd be much better if we disassemble full memory first
+     * and not do this tedious iterative disassemble at every step*/
     struct saved_state_desc {
         struct instruction_ctx ictx;
         u8 A;
@@ -151,10 +197,11 @@ public:
         u8 busy_ticks;
     } saved_state;
 
+    /* Flag indicating if a state has been saved */
     bool has_saved_state;
 
-    void save_state();
-    void load_state();
+    void save_state();  /* Saves current CPU state into this->saved_state */
+    void load_state();  /* Loads current CPU state from this->saved_state */
 
 private:
     /* Address mode handlers */

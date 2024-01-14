@@ -31,7 +31,7 @@ int main()
     win = SDL_CreateWindow("Test",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            1024, 768, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP);
+            1024, 768, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
     rnd = SDL_CreateRenderer(win, -1, 0);
 

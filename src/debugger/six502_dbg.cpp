@@ -3,6 +3,15 @@
 const char *DBG_six502::__keypound_font_file = "./src/video/fonts/kpndf.png";
 const std::string DBG_six502::__dbg_window_name = "SIX502 DEBUGGER";
 
+/* This one describes the layout of debugger windows by defining
+ * a string array of size MARKUP_RES and filling it with symbols
+ * with each one corresponding to it's window object and thus
+ * defining layout
+ *
+ * The array of string represents a debugger window and each symbol
+ * represents a chunk of a screen that will be dedicated to a certain
+ * window
+ */
 const std::string DBG_six502::__interface[MARKUP_RES] = {
     "CCCMMMDDDDDD",
     "CCCMMMDDDDDD",

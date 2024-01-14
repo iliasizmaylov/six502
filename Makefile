@@ -201,7 +201,7 @@ clean:
 	$(Q)printf "Removing all $(ANSI_BOLD)SIX502$(ANSI_RESET) objects and executables..."
 	$(Q)rm -f $(TESTBINDIR)/$(DEFTEST) $(DEFTEST_OBJ) $(OBJECTS) $(OP_OBJECTS) $(SDL_OBJECTS) $(DBG_OBJECTS)
 	$(Q)rm -f $(LIBSTNAME) $(LIBSHNAME)
-	$(Q)rm -f $(SHTEST) $(STTEST)
+	$(Q)rm -f $(TESTBINDIR)/$(SHTEST) $(TESTBINDIR)/$(STTEST)
 	$(Q)printf " $(ANSI_GREEN)Done$(ANSI_RESET)!\n"
 
 # ---------------- Make "subtargets" ----------------

@@ -15,49 +15,72 @@
 #include <atomic>
 #include <chrono>
 
+/* Scales for title borders and text */
 #define TITLE_BASE_SCALE        0.8
 #define TITLE_MIN_SCALE         0.2
 
+/* Debugger title and content offsets from screen edges */
 #define TITLE_OFFSET            5
 #define CONTENT_OFFSET          3
 
+/* Debugger contents scale */
 #define CONTENT_BASE_SCALE      0.5
 #define CONTENT_MIN_SCALE       0.18
 
+/* Frequency of six502 deubbger background fading in and out */
 #define BGCHANGE_FREQUENCY      50
+
+/* Starting color of six502 debugger background */
 #define BLUECLR_DEFAULT         100
+
+/* Minimum color until which background fades out */
 #define BLUECLR_MIN             90
+
+/* Maximum color until which background fades in */
 #define BLUECLR_MAX             105
 
+/* Internal debugger window types */
 enum __DBG_WINDOWS {
-    DBGWIN_CPUSTATE = 0,
-    DBGWIN_DISASM,
-    DBGWIN_HELP,
-    DBGWIN_MEMORY,
-    DBGWIN_STACK,
+    DBGWIN_CPUSTATE = 0,    /* Window "CPUSTATE" */
+    DBGWIN_DISASM,          /* Window "DISASSEMBLY" */
+    DBGWIN_HELP,            /* Window "HELP" */
+    DBGWIN_MEMORY,          /* Window "MEMORY" */
+    DBGWIN_STACK,           /* Window "STACK" */
     NR_DBGWIN
 };
 
+/* six502 debugger internal windows layout map resolution
+ * look at DBG_six502::__interface static var definition in
+ * six502_dbg.cpp for details
+ */
 #define MARKUP_RES              12
 
+/* Debugger colors */
 enum __DBG_COLORS {
+    /* White color */
     DBG_CLR_DEFAULT = 0,
 
+    /* Orange color - used for title mostly */
     DBG_CLR_ORANGE,
     DBG_CLR_TITLE = DBG_CLR_ORANGE,
 
+    /* Red-ish orange - used for title borders */
     DBG_CLR_REDORANGE,
     DBG_CLR_TITLE_BORDER = DBG_CLR_REDORANGE,
 
+    /* Yellow - many uses but mostly to highlight certain text */
     DBG_CLR_YELLOW,
     DBG_CLR_SELECT = DBG_CLR_YELLOW,
 
+    /* Red - errors, breakpoints, etc.*/
     DBG_CLR_RED,
     DBG_CLR_ERR = DBG_CLR_RED,
 
+    /* Green - also various uses */
     DBG_CLR_GREEN,
     DBG_CLR_OK = DBG_CLR_GREEN,
 
+    /* Grey - to make inessential things less apparent and stuff */
     DBG_CLR_GREY,
     DBG_CLR_INACT = DBG_CLR_GREY,
 

@@ -6,6 +6,9 @@
 
 typedef uint64_t devid_t;
 
+/* DEV_six502 is an abstract class from which it's meant that
+ * six502 library users will derive their own device class for
+ * each of the device they want to put on the bus */
 class DEV_six502 {
 public:
     DEV_six502(const char *name, addr_t from, addr_t to);
@@ -16,13 +19,25 @@ public:
 
     devid_t id;
 
+    /* process_read and process_write are handlers for well read and
+     * write events (who woulda thought). These are meant to be 
+     * overridden in derived classes and thus a user can
+     * basically define a behaviour of a device they need on
+     * the bus
+     */
     virtual result_t process_read(addr_t addr, databus_t *data) = 0;
     virtual result_t process_write(addr_t addr, databus_t data) = 0;
 
+    /* Returns a chunk of data in a given range on a device
+     * Which really means that it preforms process_read for
+     * each address in the range and packs all outputs into a
+     * databus_t array 
+     */
     result_t fetch_data(addr_range_t range,
             databus_t *data, u16 *num_bytes);
 };
 
+/* Example class that implements NES RAM */
 class NES_MEM_six502 : public DEV_six502 {
 public:
     NES_MEM_six502(const char *name, addr_t from, addr_t to);
@@ -37,6 +52,9 @@ public:
     result_t process_write(addr_t addr, databus_t data);
 };
 
+/* Example class that implements basic RAM device with an
+ * address space spanning across all 64Kb
+ */
 class MEM_DEV_six502 : public DEV_six502 {
 public:
     MEM_DEV_six502(const char *name, addr_t from, addr_t to);
