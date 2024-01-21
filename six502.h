@@ -1,5 +1,4 @@
-#ifndef __SIX502_H__
-#define __SIX502_H__
+#pragma once
 
 #include "six502_cmn.h"
 #include "six502_cpu.h"

@@ -1,5 +1,4 @@
-#ifndef _SIX502_BUS_H_
-#define _SIX502_BUS_H_
+#pragma once
 
 #include "six502_cpu.h"
 #include "six502_dev.h"
@@ -15,9 +14,9 @@ private:
     /* Storage for all devices on the bus
      * The reason why it is an unordered map is because when
      * six502_cpu is doing a read or a write it is oblivious
-     * to the target device and only knows what address to put 
+     * to the target device and only knows what address to put
      * on a databus
-     * So that's why there are methods broadcast_read and 
+     * So that's why there are methods broadcast_read and
      * broadcast_write that accept an address and a buffer
      * and then just iterate over all devices and call a
      * DEV_six502::process_read or DEV_six502::process_write
@@ -40,33 +39,31 @@ public:
     result_t broadcast_write(addr_t addr, databus_t data);
 
     /* Returens a pointer to device class based on a memory address
-     * if there is a device corresponding to such address 
+     * if there is a device corresponding to such address
      * If there are multiple devices that are "listening" on a same address
      * (which is toatlly possible) this function will return the first
      * one it finds, which is a problem, so:
      *
-     * TODO: make a method that will return vector of 
+     * TODO: make a method that will return vector of
      * devices that correspond to a given address
      */
     DEV_six502 *get_device_at_addr(addr_t addr);
 
-    /* Load 64Kb of memory from a binary file and broadcast it across 
+    /* Load 64Kb of memory from a binary file and broadcast it across
      * all devices which basically means to fill the total 6502
      * addressible space with data from a given file */
     result_t load_from_file_64(std::string path);
 
-    /* Get a bunch of bytes from a device(s) corresponding to a given address 
+    /* Get a bunch of bytes from a device(s) corresponding to a given address
      * range
      */
     result_t fetch_device_data(addr_range_t range, databus_t *data,
             u16 *num_bytes);
 
-    /* The same as fetch_device_data but the output is an array of instruction_ctx 
+    /* The same as fetch_device_data but the output is an array of instruction_ctx
      * structs which represent an info about a disassembly of data on a given
      * address range
      */
     result_t fetch_instructions(addr_t start, struct instruction_ctx *out,
             u16 count, u16 *num);
 };
-
-#endif  /* _SIX502_BUS_H_ */

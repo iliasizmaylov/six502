@@ -6,3 +6,6 @@ tests/bin/*
 tests/obj/*
 .DS_store
 Makefile
+*.so
+*.so.*
+*.a

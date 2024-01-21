@@ -1,5 +1,4 @@
-#ifndef _SIX502_DEV_H_
-#define _SIX502_DEV_H_
+#pragma once
 
 #include "six502_cmn.h"
 #include <string>
@@ -67,5 +66,3 @@ public:
     result_t process_read(addr_t addr, databus_t *data);
     result_t process_write(addr_t addr, databus_t data);
 };
-
-#endif  /* _SIX502_DEV_H_ */

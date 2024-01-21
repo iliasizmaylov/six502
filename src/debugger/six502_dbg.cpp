@@ -907,4 +907,3 @@ result_t DBG_six502::process_event(SDL_Event *ev)
 
     return SIX502_RET_SUCCESS;
 }
-
