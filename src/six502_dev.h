@@ -19,7 +19,7 @@ public:
     devid_t id;
 
     /* process_read and process_write are handlers for well read and
-     * write events (who woulda thought). These are meant to be 
+     * write events (who woulda thought). These are meant to be
      * overridden in derived classes and thus a user can
      * basically define a behaviour of a device they need on
      * the bus
@@ -30,7 +30,7 @@ public:
     /* Returns a chunk of data in a given range on a device
      * Which really means that it preforms process_read for
      * each address in the range and packs all outputs into a
-     * databus_t array 
+     * databus_t array
      */
     result_t fetch_data(addr_range_t range,
             databus_t *data, u16 *num_bytes);

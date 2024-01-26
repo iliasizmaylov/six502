@@ -33,9 +33,11 @@ result_t BUS_six502::broadcast_read(addr_t addr, databus_t *data)
 {
     result_t res = SIX502_RET_STRAY_MEM;
 
-    for (auto it = devices.begin(); it != devices.end(); ++it)
-        if ((*it)->process_read(addr, data) == SIX502_RET_SUCCESS)
-            res = SIX502_RET_SUCCESS;
+    for (auto it = devices.begin(); it != devices.end(); ++it) {
+        res = (*it)->process_read(addr, data);
+        if (res == SIX502_RET_DEVICE_BREAK)
+            break;
+    }
 
     return res;
 }
@@ -44,9 +46,11 @@ result_t BUS_six502::broadcast_write(addr_t addr, databus_t data)
 {
     result_t res = SIX502_RET_STRAY_MEM;
 
-    for (auto it = devices.begin(); it != devices.end(); ++it)
-        if ((*it)->process_write(addr, data) == SIX502_RET_SUCCESS)
-            res = SIX502_RET_SUCCESS;
+    for (auto it = devices.begin(); it != devices.end(); ++it) {
+        res = (*it)->process_write(addr, data);
+        if (res == SIX502_RET_DEVICE_BREAK)
+            break;
+    }
 
     return res;
 }

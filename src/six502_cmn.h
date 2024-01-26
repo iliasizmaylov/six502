@@ -114,14 +114,17 @@ static __always_inline __attr_used void addr_range_squeeze(const addr_range_t *b
 #define __SIX502_RET_SECTION_ERRORS     __RET_SEC_ERR,
 #define __SIX502_RET_SECTION_END        SIX502_NR_RET
 
-#define RESULT_OK(x)    (x == SIX502_RET_SUCCESS)
-#define RESULT_INFO(x)  (x < __RET_SEC_WARN && x > SIX502_RET_SUCCESS)
-#define RESULT_WARN(x)  (x > __RET_SEC_WARN && x < RET_SEC_ERR)
+#define RESULT_OK(x)    (x < __RET_SEC_INFO)
+#define RESULT_INFO(x)  (x < __RET_SEC_WARN && x > __RES_SEC_INFO)
+#define RESULT_WARN(x)  (x > __RET_SEC_WARN && x < __RET_SEC_ERR)
 #define RESULT_ERR(x)   (x > __RET_SEC_ERR)
 
 enum __SIX502_RET {
     SIX502_RET_SUCCESS,
     SIX502_RET_QUIT,
+
+    SIX502_RET_DEVICE_BREAK,
+    SIX502_RET_DEVICE_NOBREAK,
 
 __SIX502_RET_SECTION_INFO
     SIX502_RET_NO_RW,

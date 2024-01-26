@@ -130,7 +130,7 @@ private:
 
     /* Runs one instruction at PC
      * If debugger_on == true then CPU will not count
-     * ticks (or cycles) that executed instruction 
+     * ticks (or cycles) that executed instruction
      * takes to run which is done for six502 debugger
      * single step mode
      */
@@ -160,10 +160,10 @@ public:
     result_t nmi();     /* Non-Maskable interrupt handler */
     result_t reset();   /* CPU reset handler */
 
-    /* dryrun is just what it sounds like - it processes 
-     * one instruction at PC, fills this->ictx but doesn't 
+    /* dryrun is just what it sounds like - it processes
+     * one instruction at PC, fills this->ictx but doesn't
      * let the instructions to actually do it's business
-     * and affect the emulated system 
+     * and affect the emulated system
      * It's used for debugger to gather info about instruction
      * i.e. what's the address mode, immediate value or absolute
      * address, zp offset, etc. */
@@ -179,10 +179,10 @@ public:
      * to a given state
      *
      * Used when six502 debugger is doing a disassembly
-     * 
+     *
      * Basically it's here in order for us to be able to
-     * do multiple this->dryrun() in order to get a 
-     * disassembly for a chunk of memory 
+     * do multiple this->dryrun() in order to get a
+     * disassembly for a chunk of memory
      *
      * TODO: It'd be much better if we disassemble full memory first
      * and not do this tedious iterative disassemble at every step*/
