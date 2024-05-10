@@ -189,7 +189,7 @@ ifeq (, $(wildcard $(LIBSTNAME)))
 	$(error Can't link $(STTEST): static library $(LIBSTNAME) has'n been built)
 endif
 	$(Q)printf "Linking into an executable $(ANSI_GREEN)$(TESTBINDIR)/$(STTEST)$(ANSI_RESET)\n"
-	$(Q)$(CXX) $(INCLUDES) $(STTEST_OBJ) -o $(TESTBINDIR)/$(STTEST) $(LDFLAGS) $(LDFLAGS_SIX502_STATIC)
+	$(Q)$(CXX) $(INCLUDES) $(STTEST_OBJ) -o $(TESTBINDIR)/$(STTEST) $(LDFLAGS_SIX502_STATIC) $(LDFLAGS)
 	$(Q)printf "\nBuild finished.\n"
 $(STTEST_OBJ):
 	$(Q)mkdir -p $(TESTOBJDIR)

@@ -2,7 +2,7 @@
 #define __SDL_UTILS_H__
 
 #include <SDL2/SDL.h>
-#include <SDL2_image/SDL_image.h>
+#include <SDL2/SDL_image.h>
 
 #include <string>
 #include <stdio.h>

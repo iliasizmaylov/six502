@@ -4,8 +4,12 @@
 #include <cstdint>
 #include <string>
 #include <algorithm>
+#include <cstring>
 
+#ifndef __always_inline
 #define __always_inline __attribute__((always_inline))
+#endif
+
 #define __hot           __attribute__((hot))
 #define __attr_cold     __attribute__((cold))
 #define __attr_const    __attribute__((const))

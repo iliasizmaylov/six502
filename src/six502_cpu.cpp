@@ -8,7 +8,7 @@ CPU_six502::CPU_six502()
 
     init_ops();
 
-    memset(&ictx, 0, sizeof(ictx));
+    std::memset(&ictx, 0, sizeof(ictx));
 
     A = 0;
     X = 0;
@@ -231,7 +231,7 @@ result_t CPU_six502::reset()
 
 result_t CPU_six502::__runop(bool debugger_on)
 {
-    memset(&ictx, 0, sizeof(ictx));
+    std::memset(&ictx, 0, sizeof(ictx));
 
     ictx.opaddr = PC;
     read(PC++, &ictx.opcode);
@@ -256,7 +256,7 @@ result_t CPU_six502::dryrun()
 
     this->save_state();
 
-    memset(&ictx, 0, sizeof(ictx));
+    std::memset(&ictx, 0, sizeof(ictx));
 
     ictx.opaddr = PC;
     read(PC++, &ictx.opcode);
@@ -266,9 +266,9 @@ result_t CPU_six502::dryrun()
 
     (this->*ictx.ins->addr)();
 
-    memcpy(&saved_ctx, &ictx, sizeof(ictx));
+    std::memcpy(&saved_ctx, &ictx, sizeof(ictx));
     this->load_state();
-    memcpy(&ictx, &saved_ctx, sizeof(ictx));
+    std::memcpy(&ictx, &saved_ctx, sizeof(ictx));
 
     return SIX502_RET_SUCCESS;
 }
