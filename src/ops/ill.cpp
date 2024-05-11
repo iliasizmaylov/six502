@@ -68,7 +68,7 @@ __six502_instr result_t CPU_six502::iDCP()
     ictx.imm--;
     write(ictx.abs, ictx.imm);
     ictx.aux = A - ictx.imm;
-    set_flag(FLAG_CARRY, ictx.aux >= 0);
+    set_flag(FLAG_CARRY, A >= ictx.imm);
     set_flags_nz((u8)ictx.aux);
 
     return SIX502_RET_SUCCESS;
@@ -130,7 +130,7 @@ __six502_instr result_t CPU_six502::iAXS()
     ictx.aux = (X & A) - ictx.imm;
     X = (u8)ictx.aux;
     set_flags_nz(X);
-    set_flag(FLAG_CARRY, ictx.aux >= 0);
+    set_flag(FLAG_CARRY, (X & A) >= ictx.imm);
 
     return SIX502_RET_SUCCESS;
 }
@@ -149,8 +149,7 @@ __six502_instr result_t CPU_six502::iSHY()
     read(PC + 1, &ictx.aux81);
     ictx.aux2 = Y + ictx.aux81;
 
-    if ((u8)(ictx.aux2 & 0x00FF) <= 0x00FF)
-        write(ictx.abs, (u8)ictx.aux);
+	write(ictx.abs, (u8)ictx.aux);
 
     return SIX502_RET_SUCCESS;
 }
@@ -161,8 +160,7 @@ __six502_instr result_t CPU_six502::iSHX()
     read(PC + 1, &ictx.aux81);
     ictx.aux2 = X + ictx.aux81;
 
-    if ((u8)(ictx.aux2 & 0x00FF) <= 0x00FF)
-        write(ictx.abs, (u8)ictx.aux);
+	write(ictx.abs, (u8)ictx.aux);
 
     return SIX502_RET_SUCCESS;
 }

@@ -33,6 +33,7 @@ int main()
             1024, 768, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
     rnd = SDL_CreateRenderer(win, -1, 0);
+	SDL_SetRenderDrawBlendMode(rnd, SDL_BLENDMODE_BLEND);
 
     DBG_six502 debugger(win, rnd, &bus);
 

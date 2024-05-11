@@ -135,7 +135,7 @@ void DBG_six502_window::vrenderf(const std::string fmt, va_list args)
         result.resize(size);
         size = vsnprintf((char *)result.data(), prev_size, fmt.c_str(), args);
 
-        if (size >= 0 && size < prev_size) {
+        if (size < prev_size) {
             result.resize(size + 1);
             isComplete = true;
         }
