@@ -2,7 +2,17 @@
 #define __SDL_UTILS_H__
 
 #include <SDL2/SDL.h>
+
+/* TODO: ABSOLUTELY DEFINITELY SORT THIS OUT!
+ *
+ *       Either there is a way to properly install SDL2 and SDL2_image
+ *       or a proper way to compile everything
+ */
+#if defined(__APPLE__) || defined(__MACH__)
+#include <SDL2_image/SDL_image.h>
+#else
 #include <SDL2/SDL_image.h>
+#endif
 
 #include <string>
 #include <stdio.h>
