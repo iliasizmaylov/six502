@@ -58,6 +58,17 @@ result_t MEM_DEV_six502::process_write(addr_t addr, databus_t data)
     return SIX502_RET_SUCCESS;
 }
 
+NES_MEM_six502::NES_MEM_six502(const char *name, addr_t from, addr_t to)
+    : DEV_six502(name, from, to)
+{
+    /* No logic required here yet */
+}
+
+NES_MEM_six502::~NES_MEM_six502()
+{
+    /* No logic required here yet */
+}
+
 __always_inline __attr_const addr_t NES_MEM_six502::mirror(addr_t addr) const
 {
     return addr & MEM_SZ_2KB;
