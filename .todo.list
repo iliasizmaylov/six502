@@ -62,4 +62,23 @@ FUNCTIONALITY:
        there is as little amount of pointless ticks as possible while also
        correctly emulating each clockable device's frequency
 
-       (02.15.25) COMPLETED []
+       (02.15.25) COMPLETED [ ]
+   
+    3. Refresh my memory about how debugger works and probably update it
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       Currently debugger is a mess (in my opinion). It uses SDL2 to output
+       info and also loads a custom font and it all leads to it maintenance
+       being very painful.
+
+       Also debugger will probably need to be in a different thread or
+       something like that because it will have to be synced to a VClock and
+       not directly called by CPU each tick.
+
+       Also x2 - it will have to be used in conjunction with other custom
+       tools made by a user specifically for their system (like NES: maybe
+       any NES emulator based on SIX502 will need it's own debugging tools)
+
+       I'll probably have to ditch SDL2 based debugger interface and move to
+       ImGUI or something like that
+
+       (02.15.25) COMPLETED [ ]
