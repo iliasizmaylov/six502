@@ -1,0 +1,65 @@
+    
+ #===========================================================================#
+ #                          TODO LIST FOR SIX502                             #
+ #===========================================================================#
+
+REFACTORING:
+~~~~~~~~~~~
+    1. Change raw pointers (where necessary) to smart pointers
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       It's better to be as reserved with that as possible.
+
+       I will probably only need to do that with objects that are
+       being allocated and such to avoid using "new" operator.
+       
+       (02.15.25) COMPLETED [ ]
+
+    2. Use pass-by-reference parameters rather than accepting pointers
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       This will probably apply to all cases where currently functions
+       accept pointers. In cases where functions accept pointers to objects
+       it will probably be changed to accepting smart pointers.
+
+       (02.15.25) COMPLETED [ ]
+
+    3. Use namespaces and remove unnecessary compiler attribute macros
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       I played around with compiler hints/attributes enough - it's time to
+       purge them in entirely because they just lead to bloating the code.
+
+       Also add namespaces (at least one "SIX502" sort of namespace) for
+       utility functions and typedefs.
+
+       (02.15.25) COMPLETED [ ]
+
+FUNCTIONALITY:
+~~~~~~~~~~~~~
+    1. Make emulator cycle accurate
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       The current preliminary idea is to make each opcode contain a queue
+       of micro opcodes that are being loaded into CPU's context when PC
+       encounters this particular instruction. Each micro opcode will then
+       be extracted from this queue on each CPU tick one by one and executed.
+
+       (02.15.25) COMPLETED [ ]
+
+    2. Introduce "Clockable Devices" and a "VClock"
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       VClock is supposed to become a virtual clock for the whole 6502 based
+       system emulation since there can be more that one clockable device
+       (6502 CPU) but also other processing unit type devices such as
+       2C02 (NES PPU) or 2A03 (NES APU) that also need to be able to process
+       their ticks.
+
+       The problem arises when we try to appreciate the fact that (I'll use
+       NES as an example) PPU has to run exactly 3 times faster than the CPU.
+       And I want SIX502 library to give user an ability to just register a
+       clockable device specifying either it's frequency in HZ or in 1:N or
+       N:1 relation of clockable device's ticks to CPU ticks.
+
+       Based on all registered clockable devices the VClock has to then figure
+       at which granularity should it signal the global virtual tick so that
+       there is as little amount of pointless ticks as possible while also
+       correctly emulating each clockable device's frequency
+
+       (02.15.25) COMPLETED []
