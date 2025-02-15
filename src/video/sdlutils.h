@@ -1,5 +1,4 @@
-#ifndef __SDL_UTILS_H__
-#define __SDL_UTILS_H__
+#pragma once
 
 #include <SDL2/SDL.h>
 
@@ -37,6 +36,8 @@
 #define DEFAULT_PIXELFORMAT     SDL_PIXELFORMAT_ARGB8888
 
 #define DEFAULT_TITLE_OFFSET    3
+
+namespace SIX502 {
 
 class BitmapFont {
 public:
@@ -94,4 +95,4 @@ static inline int scale_size(int size, float scale)
     return (int)std::round(size * scale);
 }
 
-#endif
+} /* namespace SIX502 */

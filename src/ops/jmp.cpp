@@ -1,6 +1,8 @@
 #include "six502_cpu.h"
 
-static __always_inline u8 __branch_on(bool cond, u16 *pc,
+namespace SIX502 {
+
+static inline u8 __branch_on(bool cond, u16 *pc,
         const u16 rel, CPU_six502 *cpu)
 {
     addr_t pc_before = *pc;
@@ -13,55 +15,57 @@ static __always_inline u8 __branch_on(bool cond, u16 *pc,
     return pagex;
 }
 
-__six502_instr result_t CPU_six502::iBPL()
+result_t CPU_six502::iBPL()
 {
     busy_ticks += __branch_on(!get_flag(FLAG_NEG), &PC, ictx.rel, this);
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iBMI()
+result_t CPU_six502::iBMI()
 {
     busy_ticks += __branch_on(get_flag(FLAG_NEG), &PC, ictx.rel, this);
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iBVC()
+result_t CPU_six502::iBVC()
 {
     busy_ticks += __branch_on(!get_flag(FLAG_OFLOW), &PC, ictx.rel, this);
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iBVS()
+result_t CPU_six502::iBVS()
 {
     busy_ticks += __branch_on(get_flag(FLAG_OFLOW), &PC, ictx.rel, this);
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iBCC()
+result_t CPU_six502::iBCC()
 {
     busy_ticks += __branch_on(!get_flag(FLAG_CARRY), &PC, ictx.rel, this);
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iBCS()
+result_t CPU_six502::iBCS()
 {
     busy_ticks += __branch_on(get_flag(FLAG_CARRY), &PC, ictx.rel, this);
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iBNE()
+result_t CPU_six502::iBNE()
 {
     busy_ticks += __branch_on(!get_flag(FLAG_ZERO), &PC, ictx.rel, this);
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iBEQ()
+result_t CPU_six502::iBEQ()
 {
     busy_ticks += __branch_on(get_flag(FLAG_ZERO), &PC, ictx.rel, this);
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iKIL()
+result_t CPU_six502::iKIL()
 {
     return SIX502_RET_HALT;
 }
+
+} /* namespace SIX502 */

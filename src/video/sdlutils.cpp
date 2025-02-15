@@ -1,5 +1,7 @@
 #include "sdlutils.h"
 
+namespace SIX502 {
+
 BitmapFont::BitmapFont()
 {
     this->texture = nullptr;
@@ -299,3 +301,5 @@ int BitmapFont::get_char_height()
 {
     return this->char_height;
 }
+
+} /* namespace SIX502 */

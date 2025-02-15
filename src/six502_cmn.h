@@ -6,19 +6,7 @@
 #include <algorithm>
 #include <cstring>
 
-#ifndef __always_inline
-#define __always_inline __attribute__((always_inline))
-#endif
-
-#define __hot           __attribute__((hot))
-#define __attr_cold     __attribute__((cold))
-#define __attr_const    __attribute__((const))
-#define __attr_pure     __attribute__((pure))
-#define __flatten       __attribute__((flatten))
-#define __attr_used     __attribute__((used))
-
-#define __six502_instr       __hot __flatten
-#define __six502_addrm       __hot __flatten
+namespace SIX502 {
 
 #define MEM_SIZES_xxx   \
     MEM_SIZE(_256B, 8)  \
@@ -32,13 +20,13 @@
     MEM_SIZE(_64KB, 16) \
 
 #define MEM_SIZE(postfix, size) MEM_MAX##postfix = (1ULL << size),
-enum __MEM_SIZES_MAX {
+enum MEM_SIZES_MAX {
 MEM_SIZES_xxx
 NR_MEM_MAX
 };
 #undef MEM_SIZE
 #define MEM_SIZE(postfix, size) MEM_SZ##postfix = ((1ULL << size) - 1),
-enum __MEM_SIZES_SZ {
+enum MEM_SIZES_SZ {
 MEM_SIZES_xxx
 NR_MEM_SZ
 };
@@ -67,50 +55,51 @@ typedef union addr_range {
     u32 mask;
 } addr_range_t;
 
-static __always_inline __attr_used u32 get_mask_addr_range(addr_t from_hi, addr_t to_lo)
+static inline u32
+get_mask_addr_range(const addr_t& from_hi, const addr_t& to_lo)
 {
     return ((from_hi << 8) | to_lo);
 }
 
-static __always_inline __attr_used void fill_addr_range(addr_range_t *tgt, addr_t from_hi, addr_t to_lo)
+static inline void
+fill_addr_range(addr_range_t& tgt, const addr_t& from_hi, const addr_t& to_lo)
 {
-    tgt->hi = from_hi;
-    tgt->lo = to_lo;
+    tgt.hi = from_hi;
+    tgt.lo = to_lo;
 }
 
-static __always_inline __attr_used void fill_addr_range(addr_range_t *tgt, u32 mask)
+static inline void fill_addr_range(addr_range_t& tgt, const u32& mask)
 {
-    tgt->mask = mask;
+    tgt.mask = mask;
 }
 
-static __always_inline __attr_const __attr_used bool isin_addr_range_const(addr_t from, addr_t to, addr_t addr)
+static inline bool
+isin_addr_range(const addr_range_t& tgt, const addr_t& addr)
 {
-    if (from <= to)
-        return (addr >= from && addr <= to);
+    if (tgt.hi <= tgt.lo)
+        return (addr >= tgt.hi && addr <= tgt.lo);
 
-    return (addr >= to && addr <= from);
+    return (addr >= tgt.lo && addr <= tgt.hi);
 }
 
-static __always_inline __attr_used bool isin_addr_range(const addr_range_t *tgt, addr_t addr)
+static inline bool
+addr_range_intersects(const addr_range_t& tgt, const addr_range_t& src)
 {
-    return isin_addr_range_const(tgt->hi, tgt->lo, addr);
-}
-
-static __always_inline __attr_used bool addr_range_intersects(const addr_range_t *tgt, const addr_range_t *src)
-{
-    if ((tgt->hi > src->hi && tgt->hi > src->lo) && (tgt->lo < src->lo && tgt->lo < src->hi))
+    if ((tgt.hi > src.hi && tgt.hi > src.lo) &&
+            (tgt.lo < src.lo && tgt.lo < src.hi))
         return false;
 
     return true;
 }
 
-static __always_inline __attr_used void addr_range_squeeze(const addr_range_t *big, addr_range_t *small)
+static inline void
+addr_range_squeeze(const addr_range_t& big, addr_range_t& small)
 {
     if (!addr_range_intersects(big, small))
         return;
 
-    small->hi = small->hi < big->hi ? big->hi : small->hi;
-    small->lo = small->lo > big->lo ? big->lo : small->lo;
+    small.hi = small.hi < big.hi ? big.hi : small.hi;
+    small.lo = small.lo > big.lo ? big.lo : small.lo;
 }
 
 #define __SIX502_RET_SECTION_INFO       __RET_SEC_INFO,
@@ -146,6 +135,8 @@ __SIX502_RET_SECTION_ERRORS
 __SIX502_RET_SECTION_END
 };
 typedef enum __SIX502_RET result_t;
+
+} /* namespace SIX502 */
 
 #define HI8(x)          (((x) >> 8) & 0x00FF)
 #define LO8(x)          ((x) & 0x00FF)

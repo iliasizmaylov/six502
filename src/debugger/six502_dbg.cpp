@@ -1,5 +1,7 @@
 #include "six502_dbg.h"
 
+namespace SIX502 {
+
 const char *DBG_six502::__keypound_font_file = "./src/video/fonts/kpndf.png";
 const std::string DBG_six502::__dbg_window_name = "SIX502 DEBUGGER";
 
@@ -267,7 +269,7 @@ void DBG_six502_wdisasm::draw() {
         return;
     }
 
-    bus->fetch_instructions(pc_addr, instrs, total_lines - 5, &num);
+    bus->fetch_instructions(pc_addr, instrs, total_lines - 5, num);
 
     if (num == 0) {
         crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
@@ -373,9 +375,9 @@ void DBG_six502_wmem::draw() {
     u16 fetch_size = std::min(mem_til_end, (int)((total_lines - 1) * bytes_per_line) - 1);
     u16 bytes_read;
     addr_range_t fetch_range;
-    fill_addr_range(&fetch_range, cpu->PC, cpu->PC + fetch_size);
+    fill_addr_range(fetch_range, cpu->PC, cpu->PC + fetch_size);
 
-    bus->fetch_device_data(fetch_range, buf, &bytes_read);
+    bus->fetch_device_data(fetch_range, buf, bytes_read);
 
     if (bytes_read == 0) {
         crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
@@ -435,9 +437,9 @@ void DBG_six502_wstack::draw() {
     u16 fetch_size = std::min((int)stack_size, (int)((total_lines - 1) * bytes_per_line) - 1);
     u16 bytes_read;
     addr_range_t fetch_range;
-    fill_addr_range(&fetch_range, abs_sp, abs_sp + fetch_size);
+    fill_addr_range(fetch_range, abs_sp, abs_sp + fetch_size);
 
-    bus->fetch_device_data(fetch_range, buf, &bytes_read);
+    bus->fetch_device_data(fetch_range, buf, bytes_read);
 
     if (bytes_read == 0) {
         crenderf(DBG_CLR_ERR, "\n CAN'T READ CURRENT DEVICE!\n");
@@ -907,3 +909,5 @@ result_t DBG_six502::process_event(SDL_Event *ev)
 
     return SIX502_RET_SUCCESS;
 }
+
+} /* namespace SIX502 */

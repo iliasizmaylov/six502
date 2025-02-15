@@ -1,10 +1,11 @@
-#ifndef _SIX502_CPU_H_
-#define _SIX502_CPU_H_
+#pragma once
 
 #include "six502_dev.h"
 
 #include <iostream>
 #include <unordered_map>
+
+namespace SIX502 {
 
 /* Flags for status register */
 enum __STATUS_REG_FLAGS {
@@ -79,12 +80,16 @@ struct instruction {
 struct instruction_ctx {
     u8 opcode;
     addr_t opaddr;
+
     addr_t abs;     /* Aboslute address of an instruction target */
     addr_t rel;     /* Relative address required by current instruction */
     addr_t rel_d;   /* Relative address required by current instruction */
+
     u8 imm;         /* Fetched value after applying address mode handler */
+
     u16 aux;        /* Auxiliary container 1 */
     u16 aux2;       /* Auxiliary container 2 */
+
     u8 aux81;       /* Auxiliary 8-bit container 1 */
     u8 aux82;       /* Auxiliary 8-bit container 2 */
     u8 aux83;       /* Auxiliary 8-bit container 2 */
@@ -99,8 +104,11 @@ public:
     ~CPU_six502();
 
 private:
-    BUS_six502 *bus;    /* Pointer to BUS class that this CPU is associated with */
-    u8 busy_ticks;      /* Number of ticks left until CPU is ready to execute next instruction */
+    /* Pointer to BUS class that this CPU is associated with */
+    BUS_six502 *bus;
+
+    /* Number of ticks left until CPU is ready to execute next instruction */
+    u8 busy_ticks;
 
 public:
     /* Map of: hex opcode<->instruction descriptor struct */
@@ -119,7 +127,7 @@ private:
 
     /* Stack operations */
     result_t push_stack(databus_t data);
-    result_t pop_stack(databus_t *out_data);
+    result_t pop_stack(databus_t& out_data);
     result_t push_pc();
     result_t pop_pc();
 
@@ -138,10 +146,10 @@ private:
 
 public:
     /* Read from the BUS (this->bus) */
-    result_t read(addr_t addr, databus_t *out_data);
+    result_t read(const addr_t& addr, databus_t& out_data);
 
     /* Write to the BUS (this->bus) */
-    result_t write(addr_t addr, databus_t data);
+    result_t write(const addr_t& addr, const databus_t& data);
 
     u8 A;       /* A register */
     u8 X;       /* X register */
@@ -169,9 +177,10 @@ public:
      * address, zp offset, etc. */
     result_t dryrun();
 
-    result_t runop();               /* Run single instruction (non-debugger mode) */
-    result_t runop_dbg();           /* Run single instruction (debgger mode) */
-    result_t tick();                /* Processor tick (i.e. clock tick handler) */
+    result_t runop();       /* Run single instruction (non-debugger mode) */
+    result_t runop_dbg();   /* Run single instruction (debgger mode) */
+    result_t tick();        /* Processor tick (i.e. clock tick handler) */
+
     result_t tick_for(u64 nticks);
 
     /* This struct describes a full state of a CPU so that
@@ -307,4 +316,4 @@ private:
     result_t iKIL();    /* Halts the CPU, data bus will be set to 0xFF */
 };
 
-#endif  /* _SIX502_CPU_H_ */
+} /* namepsace SIX502 */

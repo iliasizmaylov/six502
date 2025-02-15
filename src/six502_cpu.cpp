@@ -1,6 +1,8 @@
 #include "six502_cpu.h"
 #include "six502_bus.h"
 
+namespace SIX502 {
+
 CPU_six502::CPU_six502()
 {
     bus = nullptr;
@@ -64,7 +66,7 @@ void CPU_six502::load_state()
     has_saved_state = false;
 }
 
-result_t CPU_six502::read(addr_t addr, databus_t *out_data)
+result_t CPU_six502::read(const addr_t& addr, databus_t& out_data)
 {
     if (!bus)
         return SIX502_RET_NO_BUS;
@@ -72,7 +74,7 @@ result_t CPU_six502::read(addr_t addr, databus_t *out_data)
     return bus->broadcast_read(addr, out_data);
 }
 
-result_t CPU_six502::write(addr_t addr, databus_t data)
+result_t CPU_six502::write(const addr_t& addr, const databus_t& data)
 {
     if (!bus)
         return SIX502_RET_NO_BUS;
@@ -87,7 +89,7 @@ result_t CPU_six502::push_stack(databus_t data)
     return res;
 }
 
-result_t CPU_six502::pop_stack(databus_t *out_data)
+result_t CPU_six502::pop_stack(databus_t& out_data)
 {
     STKP += 1;
     result_t res = read(STKP_PAGE_RESET | STKP, out_data);
@@ -106,8 +108,8 @@ result_t CPU_six502::pop_pc()
    u8 hi;
    u8 lo;
 
-   pop_stack(&lo);
-   pop_stack(&hi);
+   pop_stack(lo);
+   pop_stack(hi);
    PC = MERGE16(hi, lo);
 
    return SIX502_RET_SUCCESS;
@@ -161,10 +163,10 @@ result_t CPU_six502::irq()
     ictx.abs = IRQ_ADDR_RESET;
 
     u8 lo;
-    read(ictx.abs, &lo);
+    read(ictx.abs, lo);
 
     u8 hi;
-    read(ictx.abs + 1, &hi);
+    read(ictx.abs + 1, hi);
 
     PC = MERGE16(hi, lo);
 
@@ -185,10 +187,10 @@ result_t CPU_six502::nmi()
     ictx.abs = NMI_ADDR_RESET;
 
     u8 lo;
-    read(ictx.abs, &lo);
+    read(ictx.abs, lo);
 
     u8 hi;
-    read(ictx.abs + 1, &hi);
+    read(ictx.abs + 1, hi);
 
     PC = MERGE16(hi, lo);
 
@@ -202,14 +204,14 @@ result_t CPU_six502::reset()
     ictx.abs = PC_ADDR_RESET;
 
     u8 lo;
-    read(ictx.abs, &lo);
+    read(ictx.abs, lo);
 
     u8 hi;
-    read(ictx.abs + 1, &hi);
+    read(ictx.abs + 1, hi);
 
     PC = MERGE16(hi, lo);
     ictx.opaddr = PC;
-    read(PC, &ictx.opcode);
+    read(PC, ictx.opcode);
     ictx.ins = &ops[ictx.opcode];
 
     A = 0;
@@ -234,7 +236,7 @@ result_t CPU_six502::__runop(bool debugger_on)
     std::memset(&ictx, 0, sizeof(ictx));
 
     ictx.opaddr = PC;
-    read(PC++, &ictx.opcode);
+    read(PC++, ictx.opcode);
     ictx.ins = &ops[ictx.opcode];
 
     if (!debugger_on)
@@ -259,7 +261,7 @@ result_t CPU_six502::dryrun()
     std::memset(&ictx, 0, sizeof(ictx));
 
     ictx.opaddr = PC;
-    read(PC++, &ictx.opcode);
+    read(PC++, ictx.opcode);
     ictx.ins = &ops[ictx.opcode];
 
     busy_ticks = ictx.ins->ticks;
@@ -300,3 +302,5 @@ result_t CPU_six502::tick_for(u64 nticks)
 
     return SIX502_RET_SUCCESS;
 }
+
+} /* namespace SIX502 */

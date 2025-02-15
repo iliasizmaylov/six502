@@ -1,6 +1,8 @@
 #include "six502_cpu.h"
 
-__six502_instr result_t CPU_six502::iSLO()
+namespace SIX502 {
+
+result_t CPU_six502::iSLO()
 {
     write(ictx.abs, ictx.imm);
     set_flag(FLAG_CARRY, !!((ictx.imm >> 7) & 1));
@@ -12,7 +14,7 @@ __six502_instr result_t CPU_six502::iSLO()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iRLA()
+result_t CPU_six502::iRLA()
 {
     write(ictx.abs, ictx.imm);
     ictx.imm = (ictx.imm << 1) | (u8)get_flag(FLAG_CARRY);
@@ -24,7 +26,7 @@ __six502_instr result_t CPU_six502::iRLA()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iSRE()
+result_t CPU_six502::iSRE()
 {
     write(ictx.abs, ictx.imm);
     set_flag(FLAG_CARRY, !!(ictx.imm & 1));
@@ -36,7 +38,7 @@ __six502_instr result_t CPU_six502::iSRE()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iRRA()
+result_t CPU_six502::iRRA()
 {
     write(ictx.abs, ictx.imm);
     ictx.imm = (ictx.imm >> 1) | ((u8)get_flag(FLAG_CARRY) << 7);
@@ -50,20 +52,20 @@ __six502_instr result_t CPU_six502::iRRA()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iSAX()
+result_t CPU_six502::iSAX()
 {
     return write(ictx.abs, A & X);
 }
 
-__six502_instr result_t CPU_six502::iLAX()
+result_t CPU_six502::iLAX()
 {
-    read(ictx.abs, &A);
+    read(ictx.abs, A);
     X = A;
     set_flags_nz(A);
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iDCP()
+result_t CPU_six502::iDCP()
 {
     ictx.imm--;
     write(ictx.abs, ictx.imm);
@@ -74,7 +76,7 @@ __six502_instr result_t CPU_six502::iDCP()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iISC()
+result_t CPU_six502::iISC()
 {
     ictx.imm++;
     write(ictx.abs, ictx.imm);
@@ -87,7 +89,7 @@ __six502_instr result_t CPU_six502::iISC()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iANC()
+result_t CPU_six502::iANC()
 {
     A &= ictx.imm;
     set_flags_nz(A);
@@ -96,7 +98,7 @@ __six502_instr result_t CPU_six502::iANC()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iALR()
+result_t CPU_six502::iALR()
 {
     A &= ictx.imm;
     set_flag(FLAG_CARRY, !!(A & 1));
@@ -106,7 +108,7 @@ __six502_instr result_t CPU_six502::iALR()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iARR()
+result_t CPU_six502::iARR()
 {
     A &= ictx.imm;
     A = (A >> 1) | ((u8)get_flag(FLAG_CARRY) << 7);
@@ -117,7 +119,7 @@ __six502_instr result_t CPU_six502::iARR()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iXAA()
+result_t CPU_six502::iXAA()
 {
     A = (A | 0xEE) & X & ictx.imm;
     set_flags_nz(A);
@@ -125,7 +127,7 @@ __six502_instr result_t CPU_six502::iXAA()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iAXS()
+result_t CPU_six502::iAXS()
 {
     ictx.aux = (X & A) - ictx.imm;
     X = (u8)ictx.aux;
@@ -135,7 +137,7 @@ __six502_instr result_t CPU_six502::iAXS()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iAHX()
+result_t CPU_six502::iAHX()
 {
     ictx.aux = (A & X) & 7;
     write(ictx.abs, (u8)ictx.aux);
@@ -143,10 +145,10 @@ __six502_instr result_t CPU_six502::iAHX()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iSHY()
+result_t CPU_six502::iSHY()
 {
     ictx.aux = Y & ((ictx.abs >> 8) + 1);
-    read(PC + 1, &ictx.aux81);
+    read(PC + 1, ictx.aux81);
     ictx.aux2 = Y + ictx.aux81;
 
 	write(ictx.abs, (u8)ictx.aux);
@@ -154,10 +156,10 @@ __six502_instr result_t CPU_six502::iSHY()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iSHX()
+result_t CPU_six502::iSHX()
 {
     ictx.aux = X & ((ictx.abs >> 8) + 1);
-    read(PC + 1, &ictx.aux81);
+    read(PC + 1, ictx.aux81);
     ictx.aux2 = X + ictx.aux81;
 
 	write(ictx.abs, (u8)ictx.aux);
@@ -165,7 +167,7 @@ __six502_instr result_t CPU_six502::iSHX()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iTAS()
+result_t CPU_six502::iTAS()
 {
     STKP = A & X;
     ictx.aux = STKP & (ictx.abs >> 8);
@@ -174,7 +176,7 @@ __six502_instr result_t CPU_six502::iTAS()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iLAS()
+result_t CPU_six502::iLAS()
 {
     ictx.aux = ictx.imm & STKP;
     A = (u8)ictx.aux;
@@ -183,3 +185,5 @@ __six502_instr result_t CPU_six502::iLAS()
 
     return SIX502_RET_SUCCESS;
 }
+
+} /* namespace SIX502 */

@@ -38,8 +38,10 @@
 /* Maximum color until which background fades in */
 #define BLUECLR_MAX             105
 
+namespace SIX502 {
+
 /* Internal debugger window types */
-enum __DBG_WINDOWS {
+enum DBG_WINDOWS {
     DBGWIN_CPUSTATE = 0,    /* Window "CPUSTATE" */
     DBGWIN_DISASM,          /* Window "DISASSEMBLY" */
     DBGWIN_HELP,            /* Window "HELP" */
@@ -55,7 +57,7 @@ enum __DBG_WINDOWS {
 #define MARKUP_RES              12
 
 /* Debugger colors */
-enum __DBG_COLORS {
+enum DBG_COLORS {
     /* White color */
     DBG_CLR_DEFAULT = 0,
 
@@ -175,7 +177,7 @@ public:
 
     /* A wrapper around DBG_six502_window::vrenderf
      * Outputs a string with a color specified as an id
-     * within enum __DBG_COLORS
+     * within enum DBG_COLORS
      */
     void crenderf(int clr, const std::string fmt, ...);
 
@@ -519,3 +521,5 @@ static inline int get_last_col(std::string *tgt)
 
     return 0;
 }
+
+} /* namespace SIX502 */

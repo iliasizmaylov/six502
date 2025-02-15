@@ -1,6 +1,8 @@
 #include "six502_cpu.h"
 
-__six502_instr result_t CPU_six502::iORA()
+namespace SIX502 {
+
+result_t CPU_six502::iORA()
 {
     A |= ictx.imm;
     set_flags_nz(A);
@@ -8,7 +10,7 @@ __six502_instr result_t CPU_six502::iORA()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iAND()
+result_t CPU_six502::iAND()
 {
     A &= ictx.imm;
     set_flags_nz(A);
@@ -16,7 +18,7 @@ __six502_instr result_t CPU_six502::iAND()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iEOR()
+result_t CPU_six502::iEOR()
 {
     A ^= ictx.imm;
     set_flags_nz(A);
@@ -27,7 +29,7 @@ __six502_instr result_t CPU_six502::iEOR()
 #define OVERFLOW_FLAG_ADC(reg, imm, res)   \
     (!!((~((u16)reg ^ (u16)imm) & ((u16)reg ^ (u16)res)) & 0x0080))
 
-__six502_instr result_t CPU_six502::iADC()
+result_t CPU_six502::iADC()
 {
     if (get_flag(FLAG_DEC)) {
         ictx.aux = (u16)(A & 0x0F) +
@@ -64,7 +66,7 @@ __six502_instr result_t CPU_six502::iADC()
 #define OVERFLOW_FLAG_SBC(reg, imm, res)   \
     (!!((((u16)reg ^ (u16)imm) & ((u16)res ^ (u16)imm)) & 0x0080))
 
-__six502_instr result_t CPU_six502::iSBC()
+result_t CPU_six502::iSBC()
 {
     if (get_flag(FLAG_DEC)) {
         ictx.aux2 = ~(u16)ictx.imm;
@@ -99,7 +101,7 @@ __six502_instr result_t CPU_six502::iSBC()
 
 #undef OVERFLOW_FLAG_SBC
 
-__six502_instr result_t CPU_six502::iCMP()
+result_t CPU_six502::iCMP()
 {
     ictx.aux = (u16)A - (u16)ictx.imm;
     set_flag(FLAG_CARRY, A >= ictx.imm);
@@ -108,7 +110,7 @@ __six502_instr result_t CPU_six502::iCMP()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iCPX()
+result_t CPU_six502::iCPX()
 {
     ictx.aux = (u16)X - (u16)ictx.imm;
     set_flag(FLAG_CARRY, X >= ictx.imm);
@@ -117,7 +119,7 @@ __six502_instr result_t CPU_six502::iCPX()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iCPY()
+result_t CPU_six502::iCPY()
 {
     ictx.aux = (u16)Y - (u16)ictx.imm;
     set_flag(FLAG_CARRY, Y >= ictx.imm);
@@ -126,7 +128,7 @@ __six502_instr result_t CPU_six502::iCPY()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iDEC()
+result_t CPU_six502::iDEC()
 {
     ictx.aux = ictx.imm - 1;
     write(ictx.abs, ictx.aux & 0x00FF);
@@ -135,7 +137,7 @@ __six502_instr result_t CPU_six502::iDEC()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iDEX()
+result_t CPU_six502::iDEX()
 {
     X--;
     set_flags_nz(X);
@@ -143,7 +145,7 @@ __six502_instr result_t CPU_six502::iDEX()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iDEY()
+result_t CPU_six502::iDEY()
 {
     Y--;
     set_flags_nz(Y);
@@ -151,7 +153,7 @@ __six502_instr result_t CPU_six502::iDEY()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iINC()
+result_t CPU_six502::iINC()
 {
     ictx.aux = ictx.imm + 1;
     write(ictx.abs, ictx.aux & 0x00FF);
@@ -160,7 +162,7 @@ __six502_instr result_t CPU_six502::iINC()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iINX()
+result_t CPU_six502::iINX()
 {
     X++;
     set_flags_nz(X);
@@ -168,7 +170,7 @@ __six502_instr result_t CPU_six502::iINX()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iINY()
+result_t CPU_six502::iINY()
 {
     Y++;
     set_flags_nz(Y);
@@ -176,7 +178,7 @@ __six502_instr result_t CPU_six502::iINY()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iASL()
+result_t CPU_six502::iASL()
 {
     if (ictx.ins->addr == &CPU_six502::aIMP)
         ictx.imm = A;
@@ -194,7 +196,7 @@ __six502_instr result_t CPU_six502::iASL()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iROL()
+result_t CPU_six502::iROL()
 {
     if (ictx.ins->addr == &CPU_six502::aIMP)
         ictx.imm = A;
@@ -212,7 +214,7 @@ __six502_instr result_t CPU_six502::iROL()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iLSR()
+result_t CPU_six502::iLSR()
 {
     if (ictx.ins->addr == &CPU_six502::aIMP)
         ictx.imm = A;
@@ -230,7 +232,7 @@ __six502_instr result_t CPU_six502::iLSR()
     return SIX502_RET_SUCCESS;
 }
 
-__six502_instr result_t CPU_six502::iROR()
+result_t CPU_six502::iROR()
 {
     if (ictx.ins->addr == &CPU_six502::aIMP)
         ictx.imm = A;
@@ -247,3 +249,5 @@ __six502_instr result_t CPU_six502::iROR()
 
     return SIX502_RET_SUCCESS;
 }
+
+} /* namespace SIX502 */
